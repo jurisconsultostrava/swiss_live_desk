@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<!-- saved from url=(0084)file:///C:/Users/CEO/Downloads/Swiss%20Zlato%20Trh%20Board%20%E2%80%93%20Live.html -->
+<!-- saved from url=(0084)file:///C:/Users/CEO/Downloads/Swiss%20Gold%20Market%20Board%20%E2%80%93%20Live.html -->
 <html lang="cs"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Swiss Zlato Trh Board – Live</title>
+  <title>Swiss Live Desk – SAFE bez PostgreSQL</title>
   <style>
     :root {
       --bg: #edf1f5;
@@ -39,16 +39,16 @@
     button, input, select { font: inherit; }
 
     .topbar {
-      background: #0b0e13;
+      background: #10253f;
       color: #fff;
-      border-bottom: 3px solid var(--gold);
+      border-bottom: 4px solid var(--gold);
     }
 
     .topbar-inner {
       max-width: 1420px;
       margin: 0 auto;
       padding: 0 18px;
-      min-height: 58px;
+      min-height: 62px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -362,7 +362,7 @@
 
     .order-tip h3 {
       margin: 0;
-      background: #0b0e13;
+      background: #10253f;
       color: #fff;
       padding: 9px 10px;
       font-size: 14px;
@@ -381,7 +381,7 @@
     }
 
     .order-panel .card-header {
-      background: #0b0e13;
+      background: #10253f;
       color: #fff;
     }
 
@@ -520,7 +520,7 @@
     }
 
     .modal-header {
-      background: #0b0e13;
+      background: #10253f;
       color: #fff;
       padding: 14px 16px;
       display: flex;
@@ -636,52 +636,6 @@
         padding: 0 10px;
       }
     }
-  
-    /* Animated market tape */
-    .ticker-strip {
-      overflow: hidden;
-    }
-    .ticker-inner {
-      width: max-content;
-      min-width: 100%;
-      animation: marketTape 46s linear infinite;
-    }
-    .ticker-strip:hover .ticker-inner {
-      animation-play-state: paused;
-    }
-    @keyframes marketTape {
-      from { transform: translateX(0); }
-      to { transform: translateX(-50%); }
-    }
-    .account-cards-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-    }
-    .account-card-backend {
-      border: 1px solid var(--border);
-      background: var(--surface-2);
-      border-radius: 6px;
-      padding: 12px;
-    }
-    .account-card-backend h3 {
-      margin: 0 0 10px;
-      color: #24384f;
-      font-size: 15px;
-    }
-    .account-card-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 6px 0;
-      border-bottom: 1px solid rgba(0,0,0,.06);
-      font-size: 13px;
-    }
-    .account-card-row:last-child { border-bottom: 0; }
-    .account-card-row span:first-child { color: var(--muted); }
-    .account-card-row strong { color: var(--text); text-align: right; }
-    @media (max-width: 760px) { .account-cards-grid { grid-template-columns: 1fr; } }
-
   </style>
 </head>
 <body>
@@ -689,40 +643,37 @@
     <div class="topbar-inner">
       <div class="brand">
         <span class="brand-mark" aria-hidden="true"></span>
-        <span>Swiss Zlato Trh Board</span>
+        <span>Swiss Gold Market Board</span>
       </div>
       <nav class="nav">
-        <a href="#account" data-action="account">Účet</a>
-        <a href="#deposit" data-action="deposit">Vložit prostředky</a>
-        <a href="#statement" data-action="statement">Výpis</a>
-        <a href="#help" data-action="help">Nápověda</a>
-        <a class="account-btn" href="#open-account" data-action="open-account">Otevřít účet</a>
+        <a href="https://liveswiss.netlify.app/#account" data-action="account">Account</a>
+        <a href="https://liveswiss.netlify.app/#deposit" data-action="deposit">Deposit funds</a>
+        <a href="https://liveswiss.netlify.app/#statement" data-action="statement">Statement</a>
+        <a href="https://liveswiss.netlify.app/#help" data-action="help">Help</a>
+        <a class="account-btn" href="https://liveswiss.netlify.app/#open-account" data-action="open-account">Open account</a>
       </nav>
-    </div>
-    <div class="ticker-strip">
-      <div class="ticker-inner" id="priceTicker"></div>
     </div>
   </header>
 
   <section class="page-header">
     <div class="page-header-inner">
       <div class="page-title">
-        <h1>Živá obchodní tabule</h1>
+        <h1>Live order board</h1>
         <div class="subtitle">
-          <span>Nákup a prodej za aktuální tržní ceny</span>
-          <button class="btn" id="openHelp" type="button">Co je obchodní tabule?</button>
+          <span>Buy and sell at current market prices</span>
+          <button class="btn" id="openHelp" type="button">What is the order board?</button>
           <span class="status-pill">
             <span class="status-dot error" id="statusDot"></span>
-            <span id="statusText">Live ceny nedostupné – demo fallback</span>
+            <span id="statusText">Live failed – demo fallback</span>
           </span>
-          <span class="status-pill">Poslední aktualizace: <span id="lastUpdate">09. 06. 2026 18:34:14</span></span>
+          <span class="status-pill">Last update: <span id="lastUpdate">09. 06. 2026 18:34:14</span></span>
         </div>
       </div>
       <div class="header-actions">
-        <button class="btn active-view" id="viewOrderBoard" type="button">Obchodní tabule</button>
-        <button class="btn" id="viewHloubka" type="button">Hloubka trhu</button>
-        <button class="btn" id="viewSpready" type="button">Historie spreadu</button>
-        <button class="btn btn-primary" id="refreshCenas" type="button">Obnovit ceny</button>
+        <button class="btn active-view" id="viewOrderBoard" type="button">Order board</button>
+        <button class="btn" id="viewDepth" type="button">Market depth</button>
+        <button class="btn" id="viewSpreads" type="button">Market spreads</button>
+        <button class="btn btn-primary" id="refreshPrices" type="button">Refresh prices</button>
       </div>
     </div>
   </section>
@@ -732,31 +683,31 @@
       <div class="card-header">
         <div class="market-toolbar">
           <div class="form-group">
-            <label>Zobrazení</label>
+            <label>Showing</label>
             <div class="form-row">
-              <span class="market-count"><span id="visibleTrhs">20</span> z <span id="totalTrhs">20</span> trhů</span>
-              <button class="btn" id="editTrhs" type="button">Upravit</button>
+              <span class="market-count"><span id="visibleMarkets">20</span> of <span id="totalMarkets">20</span> markets</span>
+              <button class="btn" id="editMarkets" type="button">Edit</button>
             </div>
           </div>
 
           <div class="form-group">
-            <label for="unitSelect">Hmotnostní jednotka</label>
+            <label for="unitSelect">Weight units</label>
             <select id="unitSelect">
-              <option value="TOZ">Trojská unce</option>
-              <option value="G">Gramy</option>
-              <option value="KG">Kilogramy</option>
+              <option value="TOZ">Troy oz</option>
+              <option value="G">Grams</option>
+              <option value="KG">Kilos</option>
             </select>
           </div>
 
           <div class="form-group">
-            <label for="minOrder">Min. objem pokynu</label>
+            <label for="minOrder">Min. order size</label>
             <input id="minOrder" type="number" min="0" step="0.01" value="0.32">
           </div>
 
           <div class="form-group">
-            <label for="currencyFilter">Měna</label>
+            <label for="currencyFilter">Currency</label>
             <select id="currencyFilter">
-              <option value="ALL">Všechny měny</option>
+              <option value="ALL">All currencies</option>
               <option value="CZK">CZK</option>
               <option value="EUR">EUR</option>
               <option value="CHF">CHF</option>
@@ -765,12 +716,12 @@
           </div>
 
           <div class="form-group">
-            <label for="metalFilter">Komodita</label>
+            <label for="metalFilter">Bullion</label>
             <select id="metalFilter">
-              <option value="ALL">Všechny komodity</option>
-              <option value="AU">Zlato</option>
-              <option value="AG">Stříbro</option>
-              <option value="PT">Platina</option>
+              <option value="ALL">All bullion</option>
+              <option value="AU">Gold</option>
+              <option value="AG">Silver</option>
+              <option value="PT">Platinum</option>
               <option value="PD">Palladium</option>
             </select>
           </div>
@@ -780,29 +731,29 @@
       <div class="card-body">
         <div class="board-wrap" id="orderBoardView">
           <div class="order-tip" id="orderTip" style="display: none; left: 1509px; top: 420px;">
-        <h3>Zlato: Koupit in Curych</h3>
+        <h3>Gold: Buy in Curych</h3>
         <table>
           <tbody>
-            <tr><th>Cena</th><td>€4.039 / oz</td></tr>
-            <tr><th>Množství</th><td>25,42oz</td></tr>
-            <tr><th>Hodnota</th><td><strong>€102.675</strong></td></tr>
-            <tr><th>Trh</th><td>EUR · AUXZU</td></tr>
+            <tr><th>Price</th><td>€4.039 / oz</td></tr>
+            <tr><th>Quantity</th><td>25,42oz</td></tr>
+            <tr><th>Value</th><td><strong>€102.675</strong></td></tr>
+            <tr><th>Market</th><td>EUR · AUXZU</td></tr>
           </tbody>
         </table>
       </div>
           <table class="order-board-table">
             <thead>
               <tr>
-                <th>Měna</th>
-                <th>Komodita</th>
-                <th class="side-heading sell" colspan="3">Nejlepší poptávky : PRODEJ</th>
+                <th>Currency</th>
+                <th>Bullion</th>
+                <th class="side-heading sell" colspan="3">Best bids : SELL</th>
                 <th></th>
-                <th class="side-heading buy" colspan="3">NÁKUP : Nejlepší nabídky</th>
+                <th class="side-heading buy" colspan="3">BUY : Best offers</th>
               </tr>
             </thead>
             <tbody id="boardRows"><tr>
           <td class="currency-cell">USD</td>
-          <td class="bullion-cell"><span class="metal-dot "></span>Zlato: Curych</td>
+          <td class="bullion-cell"><span class="metal-dot "></span>Gold: Curych</td>
         <td colspan="3"><div class="levels bids"><div class="level best bids">
         <span class="price">$4,318</span>
         <span class="qty">14,76oz</span>
@@ -812,7 +763,7 @@
       </div><div class="level bids">
         <span class="price">$4,312</span>
         <span class="qty">29,52oz</span>
-      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Detail ceny">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
+      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Price detail">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
         <span class="price">$4,341</span>
         <span class="qty">18,04oz</span>
       </div><div class="level offers">
@@ -823,7 +774,7 @@
         <span class="qty">25,42oz</span>
       </div></div></td></tr><tr>
           <td class="currency-cell">EUR</td>
-          <td class="bullion-cell"><span class="metal-dot "></span>Zlato: Curych</td>
+          <td class="bullion-cell"><span class="metal-dot "></span>Gold: Curych</td>
         <td colspan="3"><div class="levels bids"><div class="level best bids">
         <span class="price">€4.012</span>
         <span class="qty">14,76oz</span>
@@ -833,7 +784,7 @@
       </div><div class="level bids">
         <span class="price">€4.007</span>
         <span class="qty">29,52oz</span>
-      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Detail ceny">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
+      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Price detail">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
         <span class="price">€4.034</span>
         <span class="qty">18,04oz</span>
       </div><div class="level offers">
@@ -844,7 +795,7 @@
         <span class="qty">25,42oz</span>
       </div></div></td></tr><tr>
           <td class="currency-cell">CHF</td>
-          <td class="bullion-cell"><span class="metal-dot "></span>Zlato: Curych</td>
+          <td class="bullion-cell"><span class="metal-dot "></span>Gold: Curych</td>
         <td colspan="3"><div class="levels bids"><div class="level best bids">
         <span class="price">CHF 3'769</span>
         <span class="qty">14,76oz</span>
@@ -854,7 +805,7 @@
       </div><div class="level bids">
         <span class="price">CHF 3'764</span>
         <span class="qty">29,52oz</span>
-      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Detail ceny">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
+      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Price detail">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
         <span class="price">CHF 3'790</span>
         <span class="qty">18,04oz</span>
       </div><div class="level offers">
@@ -865,7 +816,7 @@
         <span class="qty">25,42oz</span>
       </div></div></td></tr><tr>
           <td class="currency-cell">CZK</td>
-          <td class="bullion-cell"><span class="metal-dot "></span>Zlato: Curych</td>
+          <td class="bullion-cell"><span class="metal-dot "></span>Gold: Curych</td>
         <td colspan="3"><div class="levels bids"><div class="level best bids">
         <span class="price">97&nbsp;948 Kč</span>
         <span class="qty">14,76oz</span>
@@ -875,7 +826,7 @@
       </div><div class="level bids">
         <span class="price">97&nbsp;830 Kč</span>
         <span class="qty">29,52oz</span>
-      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Detail ceny">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
+      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Price detail">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
         <span class="price">98&nbsp;488 Kč</span>
         <span class="qty">18,04oz</span>
       </div><div class="level offers">
@@ -886,7 +837,7 @@
         <span class="qty">25,42oz</span>
       </div></div></td></tr><tr>
           <td class="currency-cell">USD</td>
-          <td class="bullion-cell"><span class="metal-dot "></span>Zlato: Londýn</td>
+          <td class="bullion-cell"><span class="metal-dot "></span>Gold: Londýn</td>
         <td colspan="3"><div class="levels bids"><div class="level best bids">
         <span class="price">$4,320</span>
         <span class="qty">14,76oz</span>
@@ -896,7 +847,7 @@
       </div><div class="level bids">
         <span class="price">$4,314</span>
         <span class="qty">29,52oz</span>
-      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Detail ceny">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
+      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Price detail">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
         <span class="price">$4,343</span>
         <span class="qty">18,04oz</span>
       </div><div class="level offers">
@@ -907,7 +858,7 @@
         <span class="qty">25,42oz</span>
       </div></div></td></tr><tr>
           <td class="currency-cell">EUR</td>
-          <td class="bullion-cell"><span class="metal-dot "></span>Zlato: Londýn</td>
+          <td class="bullion-cell"><span class="metal-dot "></span>Gold: Londýn</td>
         <td colspan="3"><div class="levels bids"><div class="level best bids">
         <span class="price">€4.014</span>
         <span class="qty">14,76oz</span>
@@ -917,7 +868,7 @@
       </div><div class="level bids">
         <span class="price">€4.009</span>
         <span class="qty">29,52oz</span>
-      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Detail ceny">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
+      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Price detail">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
         <span class="price">€4.036</span>
         <span class="qty">18,04oz</span>
       </div><div class="level offers">
@@ -928,7 +879,7 @@
         <span class="qty">25,42oz</span>
       </div></div></td></tr><tr>
           <td class="currency-cell">CHF</td>
-          <td class="bullion-cell"><span class="metal-dot "></span>Zlato: Londýn</td>
+          <td class="bullion-cell"><span class="metal-dot "></span>Gold: Londýn</td>
         <td colspan="3"><div class="levels bids"><div class="level best bids">
         <span class="price">CHF 3'771</span>
         <span class="qty">14,76oz</span>
@@ -938,7 +889,7 @@
       </div><div class="level bids">
         <span class="price">CHF 3'766</span>
         <span class="qty">29,52oz</span>
-      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Detail ceny">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
+      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Price detail">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
         <span class="price">CHF 3'791</span>
         <span class="qty">18,04oz</span>
       </div><div class="level offers">
@@ -949,7 +900,7 @@
         <span class="qty">25,42oz</span>
       </div></div></td></tr><tr>
           <td class="currency-cell">CZK</td>
-          <td class="bullion-cell"><span class="metal-dot "></span>Zlato: Praha</td>
+          <td class="bullion-cell"><span class="metal-dot "></span>Gold: Praha</td>
         <td colspan="3"><div class="levels bids"><div class="level best bids">
         <span class="price">98&nbsp;193 Kč</span>
         <span class="qty">14,76oz</span>
@@ -959,7 +910,7 @@
       </div><div class="level bids">
         <span class="price">98&nbsp;075 Kč</span>
         <span class="qty">29,52oz</span>
-      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Detail ceny">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
+      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Price detail">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
         <span class="price">98&nbsp;734 Kč</span>
         <span class="qty">18,04oz</span>
       </div><div class="level offers">
@@ -970,7 +921,7 @@
         <span class="qty">25,42oz</span>
       </div></div></td></tr><tr>
           <td class="currency-cell">EUR</td>
-          <td class="bullion-cell"><span class="metal-dot "></span>Zlato: Praha</td>
+          <td class="bullion-cell"><span class="metal-dot "></span>Gold: Praha</td>
         <td colspan="3"><div class="levels bids"><div class="level best bids">
         <span class="price">€4.022</span>
         <span class="qty">14,76oz</span>
@@ -980,7 +931,7 @@
       </div><div class="level bids">
         <span class="price">€4.017</span>
         <span class="qty">29,52oz</span>
-      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Detail ceny">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
+      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Price detail">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
         <span class="price">€4.044</span>
         <span class="qty">18,04oz</span>
       </div><div class="level offers">
@@ -991,7 +942,7 @@
         <span class="qty">25,42oz</span>
       </div></div></td></tr><tr>
           <td class="currency-cell">EUR</td>
-          <td class="bullion-cell"><span class="metal-dot "></span>Zlato: Frankfurt</td>
+          <td class="bullion-cell"><span class="metal-dot "></span>Gold: Frankfurt</td>
         <td colspan="3"><div class="levels bids"><div class="level best bids">
         <span class="price">€4.016</span>
         <span class="qty">14,76oz</span>
@@ -1001,7 +952,7 @@
       </div><div class="level bids">
         <span class="price">€4.011</span>
         <span class="qty">29,52oz</span>
-      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Detail ceny">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
+      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Price detail">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
         <span class="price">€4.038</span>
         <span class="qty">18,04oz</span>
       </div><div class="level offers">
@@ -1012,7 +963,7 @@
         <span class="qty">25,42oz</span>
       </div></div></td></tr><tr>
           <td class="currency-cell">CHF</td>
-          <td class="bullion-cell"><span class="metal-dot "></span>Zlato: Frankfurt</td>
+          <td class="bullion-cell"><span class="metal-dot "></span>Gold: Frankfurt</td>
         <td colspan="3"><div class="levels bids"><div class="level best bids">
         <span class="price">CHF 3'773</span>
         <span class="qty">14,76oz</span>
@@ -1022,7 +973,7 @@
       </div><div class="level bids">
         <span class="price">CHF 3'768</span>
         <span class="qty">29,52oz</span>
-      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Detail ceny">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
+      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Price detail">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
         <span class="price">CHF 3'793</span>
         <span class="qty">18,04oz</span>
       </div><div class="level offers">
@@ -1033,7 +984,7 @@
         <span class="qty">25,42oz</span>
       </div></div></td></tr><tr>
           <td class="currency-cell">USD</td>
-          <td class="bullion-cell"><span class="metal-dot metal-ag"></span>Stříbro: Curych</td>
+          <td class="bullion-cell"><span class="metal-dot metal-ag"></span>Silver: Curych</td>
         <td colspan="3"><div class="levels bids"><div class="level best bids">
         <span class="price">$57.73</span>
         <span class="qty">432oz</span>
@@ -1043,7 +994,7 @@
       </div><div class="level bids">
         <span class="price">$57.66</span>
         <span class="qty">864oz</span>
-      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Detail ceny">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
+      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Price detail">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
         <span class="price">$58.78</span>
         <span class="qty">528oz</span>
       </div><div class="level offers">
@@ -1054,7 +1005,7 @@
         <span class="qty">744oz</span>
       </div></div></td></tr><tr>
           <td class="currency-cell">EUR</td>
-          <td class="bullion-cell"><span class="metal-dot metal-ag"></span>Stříbro: Curych</td>
+          <td class="bullion-cell"><span class="metal-dot metal-ag"></span>Silver: Curych</td>
         <td colspan="3"><div class="levels bids"><div class="level best bids">
         <span class="price">€53,72</span>
         <span class="qty">432oz</span>
@@ -1064,7 +1015,7 @@
       </div><div class="level bids">
         <span class="price">€53,65</span>
         <span class="qty">864oz</span>
-      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Detail ceny">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
+      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Price detail">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
         <span class="price">€54,69</span>
         <span class="qty">528oz</span>
       </div><div class="level offers">
@@ -1075,7 +1026,7 @@
         <span class="qty">744oz</span>
       </div></div></td></tr><tr>
           <td class="currency-cell">CHF</td>
-          <td class="bullion-cell"><span class="metal-dot metal-ag"></span>Stříbro: Curych</td>
+          <td class="bullion-cell"><span class="metal-dot metal-ag"></span>Silver: Curych</td>
         <td colspan="3"><div class="levels bids"><div class="level best bids">
         <span class="price">CHF 50.41</span>
         <span class="qty">432oz</span>
@@ -1085,7 +1036,7 @@
       </div><div class="level bids">
         <span class="price">CHF 50.35</span>
         <span class="qty">864oz</span>
-      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Detail ceny">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
+      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Price detail">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
         <span class="price">CHF 51.33</span>
         <span class="qty">528oz</span>
       </div><div class="level offers">
@@ -1096,7 +1047,7 @@
         <span class="qty">744oz</span>
       </div></div></td></tr><tr>
           <td class="currency-cell">CZK</td>
-          <td class="bullion-cell"><span class="metal-dot metal-ag"></span>Stříbro: Praha</td>
+          <td class="bullion-cell"><span class="metal-dot metal-ag"></span>Silver: Praha</td>
         <td colspan="3"><div class="levels bids"><div class="level best bids">
         <span class="price">1&nbsp;313 Kč</span>
         <span class="qty">432oz</span>
@@ -1106,7 +1057,7 @@
       </div><div class="level bids">
         <span class="price">1&nbsp;311 Kč</span>
         <span class="qty">864oz</span>
-      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Detail ceny">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
+      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Price detail">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
         <span class="price">1&nbsp;337 Kč</span>
         <span class="qty">528oz</span>
       </div><div class="level offers">
@@ -1117,7 +1068,7 @@
         <span class="qty">744oz</span>
       </div></div></td></tr><tr>
           <td class="currency-cell">EUR</td>
-          <td class="bullion-cell"><span class="metal-dot metal-ag"></span>Stříbro: Praha</td>
+          <td class="bullion-cell"><span class="metal-dot metal-ag"></span>Silver: Praha</td>
         <td colspan="3"><div class="levels bids"><div class="level best bids">
         <span class="price">€53,85</span>
         <span class="qty">432oz</span>
@@ -1127,7 +1078,7 @@
       </div><div class="level bids">
         <span class="price">€53,79</span>
         <span class="qty">864oz</span>
-      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Detail ceny">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
+      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Price detail">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
         <span class="price">€54,83</span>
         <span class="qty">528oz</span>
       </div><div class="level offers">
@@ -1138,7 +1089,7 @@
         <span class="qty">744oz</span>
       </div></div></td></tr><tr>
           <td class="currency-cell">USD</td>
-          <td class="bullion-cell"><span class="metal-dot metal-pt"></span>Platina: Londýn</td>
+          <td class="bullion-cell"><span class="metal-dot metal-pt"></span>Platinum: Londýn</td>
         <td colspan="3"><div class="levels bids"><div class="level best bids">
         <span class="price">$1,672</span>
         <span class="qty">9,36oz</span>
@@ -1148,7 +1099,7 @@
       </div><div class="level bids">
         <span class="price">$1,670</span>
         <span class="qty">18,72oz</span>
-      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Detail ceny">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
+      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Price detail">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
         <span class="price">$1,693</span>
         <span class="qty">11,44oz</span>
       </div><div class="level offers">
@@ -1159,7 +1110,7 @@
         <span class="qty">16,12oz</span>
       </div></div></td></tr><tr>
           <td class="currency-cell">EUR</td>
-          <td class="bullion-cell"><span class="metal-dot metal-pt"></span>Platina: Londýn</td>
+          <td class="bullion-cell"><span class="metal-dot metal-pt"></span>Platinum: Londýn</td>
         <td colspan="3"><div class="levels bids"><div class="level best bids">
         <span class="price">€1.554</span>
         <span class="qty">9,36oz</span>
@@ -1169,7 +1120,7 @@
       </div><div class="level bids">
         <span class="price">€1.552</span>
         <span class="qty">18,72oz</span>
-      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Detail ceny">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
+      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Price detail">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
         <span class="price">€1.573</span>
         <span class="qty">11,44oz</span>
       </div><div class="level offers">
@@ -1190,7 +1141,7 @@
       </div><div class="level bids">
         <span class="price">$1,608</span>
         <span class="qty">13,68oz</span>
-      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Detail ceny">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
+      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Price detail">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
         <span class="price">$1,635</span>
         <span class="qty">8,36oz</span>
       </div><div class="level offers">
@@ -1211,7 +1162,7 @@
       </div><div class="level bids">
         <span class="price">€1.494</span>
         <span class="qty">13,68oz</span>
-      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Detail ceny">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
+      </div></div></td><td class="chart-cell"><button class="chart-btn" type="button" title="Price detail">↗</button></td><td colspan="3"><div class="levels offers"><div class="level best offers">
         <span class="price">€1.520</span>
         <span class="qty">8,36oz</span>
       </div><div class="level offers">
@@ -1228,17 +1179,17 @@
           <table class="depth-table">
             <thead>
               <tr>
-                <th>Trh</th>
-                <th>Měna</th>
-                <th>Nejlepší poptávka</th>
-                <th>Nejlepší nabídka</th>
-                <th>Množství v poptávce</th>
-                <th>Množství v nabídce</th>
-                <th>Orientační likvidita</th>
+                <th>Market</th>
+                <th>Currency</th>
+                <th>Best bid</th>
+                <th>Best offer</th>
+                <th>Bid quantity</th>
+                <th>Offer quantity</th>
+                <th>Indicative liquidity</th>
               </tr>
             </thead>
             <tbody id="depthRows"><tr>
-          <td><span class="metal-dot "></span>Zlato: Curych</td>
+          <td><span class="metal-dot "></span>Gold: Curych</td>
           <td>USD</td>
           <td style="color:var(--green);font-weight:800">$4,318</td>
           <td style="color:var(--red);font-weight:800">$4,341</td>
@@ -1246,7 +1197,7 @@
           <td>77,9oz</td>
           <td>80oz</td>
         </tr><tr>
-          <td><span class="metal-dot "></span>Zlato: Curych</td>
+          <td><span class="metal-dot "></span>Gold: Curych</td>
           <td>EUR</td>
           <td style="color:var(--green);font-weight:800">€4.012</td>
           <td style="color:var(--red);font-weight:800">€4.034</td>
@@ -1254,7 +1205,7 @@
           <td>77,9oz</td>
           <td>80oz</td>
         </tr><tr>
-          <td><span class="metal-dot "></span>Zlato: Curych</td>
+          <td><span class="metal-dot "></span>Gold: Curych</td>
           <td>CHF</td>
           <td style="color:var(--green);font-weight:800">CHF 3'769</td>
           <td style="color:var(--red);font-weight:800">CHF 3'790</td>
@@ -1262,7 +1213,7 @@
           <td>77,9oz</td>
           <td>80oz</td>
         </tr><tr>
-          <td><span class="metal-dot "></span>Zlato: Curych</td>
+          <td><span class="metal-dot "></span>Gold: Curych</td>
           <td>CZK</td>
           <td style="color:var(--green);font-weight:800">97&nbsp;948 Kč</td>
           <td style="color:var(--red);font-weight:800">98&nbsp;488 Kč</td>
@@ -1270,7 +1221,7 @@
           <td>77,9oz</td>
           <td>80oz</td>
         </tr><tr>
-          <td><span class="metal-dot "></span>Zlato: Londýn</td>
+          <td><span class="metal-dot "></span>Gold: Londýn</td>
           <td>USD</td>
           <td style="color:var(--green);font-weight:800">$4,320</td>
           <td style="color:var(--red);font-weight:800">$4,343</td>
@@ -1278,7 +1229,7 @@
           <td>77,9oz</td>
           <td>80oz</td>
         </tr><tr>
-          <td><span class="metal-dot "></span>Zlato: Londýn</td>
+          <td><span class="metal-dot "></span>Gold: Londýn</td>
           <td>EUR</td>
           <td style="color:var(--green);font-weight:800">€4.014</td>
           <td style="color:var(--red);font-weight:800">€4.036</td>
@@ -1286,7 +1237,7 @@
           <td>77,9oz</td>
           <td>80oz</td>
         </tr><tr>
-          <td><span class="metal-dot "></span>Zlato: Londýn</td>
+          <td><span class="metal-dot "></span>Gold: Londýn</td>
           <td>CHF</td>
           <td style="color:var(--green);font-weight:800">CHF 3'771</td>
           <td style="color:var(--red);font-weight:800">CHF 3'791</td>
@@ -1294,7 +1245,7 @@
           <td>77,9oz</td>
           <td>80oz</td>
         </tr><tr>
-          <td><span class="metal-dot "></span>Zlato: Praha</td>
+          <td><span class="metal-dot "></span>Gold: Praha</td>
           <td>CZK</td>
           <td style="color:var(--green);font-weight:800">98&nbsp;193 Kč</td>
           <td style="color:var(--red);font-weight:800">98&nbsp;734 Kč</td>
@@ -1302,7 +1253,7 @@
           <td>77,9oz</td>
           <td>80oz</td>
         </tr><tr>
-          <td><span class="metal-dot "></span>Zlato: Praha</td>
+          <td><span class="metal-dot "></span>Gold: Praha</td>
           <td>EUR</td>
           <td style="color:var(--green);font-weight:800">€4.022</td>
           <td style="color:var(--red);font-weight:800">€4.044</td>
@@ -1310,7 +1261,7 @@
           <td>77,9oz</td>
           <td>80oz</td>
         </tr><tr>
-          <td><span class="metal-dot "></span>Zlato: Frankfurt</td>
+          <td><span class="metal-dot "></span>Gold: Frankfurt</td>
           <td>EUR</td>
           <td style="color:var(--green);font-weight:800">€4.016</td>
           <td style="color:var(--red);font-weight:800">€4.038</td>
@@ -1318,7 +1269,7 @@
           <td>77,9oz</td>
           <td>80oz</td>
         </tr><tr>
-          <td><span class="metal-dot "></span>Zlato: Frankfurt</td>
+          <td><span class="metal-dot "></span>Gold: Frankfurt</td>
           <td>CHF</td>
           <td style="color:var(--green);font-weight:800">CHF 3'773</td>
           <td style="color:var(--red);font-weight:800">CHF 3'793</td>
@@ -1326,7 +1277,7 @@
           <td>77,9oz</td>
           <td>80oz</td>
         </tr><tr>
-          <td><span class="metal-dot metal-ag"></span>Stříbro: Curych</td>
+          <td><span class="metal-dot metal-ag"></span>Silver: Curych</td>
           <td>USD</td>
           <td style="color:var(--green);font-weight:800">$57.73</td>
           <td style="color:var(--red);font-weight:800">$58.78</td>
@@ -1334,7 +1285,7 @@
           <td>2&nbsp;280oz</td>
           <td>2&nbsp;340oz</td>
         </tr><tr>
-          <td><span class="metal-dot metal-ag"></span>Stříbro: Curych</td>
+          <td><span class="metal-dot metal-ag"></span>Silver: Curych</td>
           <td>EUR</td>
           <td style="color:var(--green);font-weight:800">€53,72</td>
           <td style="color:var(--red);font-weight:800">€54,69</td>
@@ -1342,7 +1293,7 @@
           <td>2&nbsp;280oz</td>
           <td>2&nbsp;340oz</td>
         </tr><tr>
-          <td><span class="metal-dot metal-ag"></span>Stříbro: Curych</td>
+          <td><span class="metal-dot metal-ag"></span>Silver: Curych</td>
           <td>CHF</td>
           <td style="color:var(--green);font-weight:800">CHF 50.41</td>
           <td style="color:var(--red);font-weight:800">CHF 51.33</td>
@@ -1350,7 +1301,7 @@
           <td>2&nbsp;280oz</td>
           <td>2&nbsp;340oz</td>
         </tr><tr>
-          <td><span class="metal-dot metal-ag"></span>Stříbro: Praha</td>
+          <td><span class="metal-dot metal-ag"></span>Silver: Praha</td>
           <td>CZK</td>
           <td style="color:var(--green);font-weight:800">1&nbsp;313 Kč</td>
           <td style="color:var(--red);font-weight:800">1&nbsp;337 Kč</td>
@@ -1358,7 +1309,7 @@
           <td>2&nbsp;280oz</td>
           <td>2&nbsp;340oz</td>
         </tr><tr>
-          <td><span class="metal-dot metal-ag"></span>Stříbro: Praha</td>
+          <td><span class="metal-dot metal-ag"></span>Silver: Praha</td>
           <td>EUR</td>
           <td style="color:var(--green);font-weight:800">€53,85</td>
           <td style="color:var(--red);font-weight:800">€54,83</td>
@@ -1366,7 +1317,7 @@
           <td>2&nbsp;280oz</td>
           <td>2&nbsp;340oz</td>
         </tr><tr>
-          <td><span class="metal-dot metal-pt"></span>Platina: Londýn</td>
+          <td><span class="metal-dot metal-pt"></span>Platinum: Londýn</td>
           <td>USD</td>
           <td style="color:var(--green);font-weight:800">$1,672</td>
           <td style="color:var(--red);font-weight:800">$1,693</td>
@@ -1374,7 +1325,7 @@
           <td>49,4oz</td>
           <td>51oz</td>
         </tr><tr>
-          <td><span class="metal-dot metal-pt"></span>Platina: Londýn</td>
+          <td><span class="metal-dot metal-pt"></span>Platinum: Londýn</td>
           <td>EUR</td>
           <td style="color:var(--green);font-weight:800">€1.554</td>
           <td style="color:var(--red);font-weight:800">€1.573</td>
@@ -1405,17 +1356,17 @@
           <table class="spreads-table">
             <thead>
               <tr>
-                <th>Trh</th>
-                <th>Měna</th>
-                <th>Nejlepší poptávka</th>
-                <th>Nejlepší nabídka</th>
+                <th>Market</th>
+                <th>Currency</th>
+                <th>Best bid</th>
+                <th>Best offer</th>
                 <th>Spread</th>
                 <th>Spread %</th>
-                <th>Spotová báze</th>
+                <th>Spot basis</th>
               </tr>
             </thead>
             <tbody id="spreadRows"><tr>
-          <td><span class="metal-dot "></span>Zlato: Curych</td>
+          <td><span class="metal-dot "></span>Gold: Curych</td>
           <td>USD</td>
           <td style="color:var(--green);font-weight:800">$4,318</td>
           <td style="color:var(--red);font-weight:800">$4,341</td>
@@ -1423,7 +1374,7 @@
           <td><strong>0,55 %</strong></td>
           <td>$4,325</td>
         </tr><tr>
-          <td><span class="metal-dot "></span>Zlato: Curych</td>
+          <td><span class="metal-dot "></span>Gold: Curych</td>
           <td>EUR</td>
           <td style="color:var(--green);font-weight:800">€4.012</td>
           <td style="color:var(--red);font-weight:800">€4.034</td>
@@ -1431,7 +1382,7 @@
           <td><strong>0,55 %</strong></td>
           <td>€4.019</td>
         </tr><tr>
-          <td><span class="metal-dot "></span>Zlato: Curych</td>
+          <td><span class="metal-dot "></span>Gold: Curych</td>
           <td>CHF</td>
           <td style="color:var(--green);font-weight:800">CHF 3'769</td>
           <td style="color:var(--red);font-weight:800">CHF 3'790</td>
@@ -1439,7 +1390,7 @@
           <td><strong>0,55 %</strong></td>
           <td>CHF 3'775</td>
         </tr><tr>
-          <td><span class="metal-dot "></span>Zlato: Curych</td>
+          <td><span class="metal-dot "></span>Gold: Curych</td>
           <td>CZK</td>
           <td style="color:var(--green);font-weight:800">97&nbsp;948 Kč</td>
           <td style="color:var(--red);font-weight:800">98&nbsp;488 Kč</td>
@@ -1447,7 +1398,7 @@
           <td><strong>0,55 %</strong></td>
           <td>98&nbsp;120 Kč</td>
         </tr><tr>
-          <td><span class="metal-dot "></span>Zlato: Londýn</td>
+          <td><span class="metal-dot "></span>Gold: Londýn</td>
           <td>USD</td>
           <td style="color:var(--green);font-weight:800">$4,320</td>
           <td style="color:var(--red);font-weight:800">$4,343</td>
@@ -1455,7 +1406,7 @@
           <td><strong>0,55 %</strong></td>
           <td>$4,325</td>
         </tr><tr>
-          <td><span class="metal-dot "></span>Zlato: Londýn</td>
+          <td><span class="metal-dot "></span>Gold: Londýn</td>
           <td>EUR</td>
           <td style="color:var(--green);font-weight:800">€4.014</td>
           <td style="color:var(--red);font-weight:800">€4.036</td>
@@ -1463,7 +1414,7 @@
           <td><strong>0,55 %</strong></td>
           <td>€4.019</td>
         </tr><tr>
-          <td><span class="metal-dot "></span>Zlato: Londýn</td>
+          <td><span class="metal-dot "></span>Gold: Londýn</td>
           <td>CHF</td>
           <td style="color:var(--green);font-weight:800">CHF 3'771</td>
           <td style="color:var(--red);font-weight:800">CHF 3'791</td>
@@ -1471,7 +1422,7 @@
           <td><strong>0,55 %</strong></td>
           <td>CHF 3'775</td>
         </tr><tr>
-          <td><span class="metal-dot "></span>Zlato: Praha</td>
+          <td><span class="metal-dot "></span>Gold: Praha</td>
           <td>CZK</td>
           <td style="color:var(--green);font-weight:800">98&nbsp;193 Kč</td>
           <td style="color:var(--red);font-weight:800">98&nbsp;734 Kč</td>
@@ -1479,7 +1430,7 @@
           <td><strong>0,55 %</strong></td>
           <td>98&nbsp;120 Kč</td>
         </tr><tr>
-          <td><span class="metal-dot "></span>Zlato: Praha</td>
+          <td><span class="metal-dot "></span>Gold: Praha</td>
           <td>EUR</td>
           <td style="color:var(--green);font-weight:800">€4.022</td>
           <td style="color:var(--red);font-weight:800">€4.044</td>
@@ -1487,7 +1438,7 @@
           <td><strong>0,55 %</strong></td>
           <td>€4.019</td>
         </tr><tr>
-          <td><span class="metal-dot "></span>Zlato: Frankfurt</td>
+          <td><span class="metal-dot "></span>Gold: Frankfurt</td>
           <td>EUR</td>
           <td style="color:var(--green);font-weight:800">€4.016</td>
           <td style="color:var(--red);font-weight:800">€4.038</td>
@@ -1495,7 +1446,7 @@
           <td><strong>0,55 %</strong></td>
           <td>€4.019</td>
         </tr><tr>
-          <td><span class="metal-dot "></span>Zlato: Frankfurt</td>
+          <td><span class="metal-dot "></span>Gold: Frankfurt</td>
           <td>CHF</td>
           <td style="color:var(--green);font-weight:800">CHF 3'773</td>
           <td style="color:var(--red);font-weight:800">CHF 3'793</td>
@@ -1503,7 +1454,7 @@
           <td><strong>0,55 %</strong></td>
           <td>CHF 3'775</td>
         </tr><tr>
-          <td><span class="metal-dot metal-ag"></span>Stříbro: Curych</td>
+          <td><span class="metal-dot metal-ag"></span>Silver: Curych</td>
           <td>USD</td>
           <td style="color:var(--green);font-weight:800">$57.73</td>
           <td style="color:var(--red);font-weight:800">$58.78</td>
@@ -1511,7 +1462,7 @@
           <td><strong>1,82 %</strong></td>
           <td>$58.20</td>
         </tr><tr>
-          <td><span class="metal-dot metal-ag"></span>Stříbro: Curych</td>
+          <td><span class="metal-dot metal-ag"></span>Silver: Curych</td>
           <td>EUR</td>
           <td style="color:var(--green);font-weight:800">€53,72</td>
           <td style="color:var(--red);font-weight:800">€54,69</td>
@@ -1519,7 +1470,7 @@
           <td><strong>1,82 %</strong></td>
           <td>€54,15</td>
         </tr><tr>
-          <td><span class="metal-dot metal-ag"></span>Stříbro: Curych</td>
+          <td><span class="metal-dot metal-ag"></span>Silver: Curych</td>
           <td>CHF</td>
           <td style="color:var(--green);font-weight:800">CHF 50.41</td>
           <td style="color:var(--red);font-weight:800">CHF 51.33</td>
@@ -1527,7 +1478,7 @@
           <td><strong>1,82 %</strong></td>
           <td>CHF 50.82</td>
         </tr><tr>
-          <td><span class="metal-dot metal-ag"></span>Stříbro: Praha</td>
+          <td><span class="metal-dot metal-ag"></span>Silver: Praha</td>
           <td>CZK</td>
           <td style="color:var(--green);font-weight:800">1&nbsp;313 Kč</td>
           <td style="color:var(--red);font-weight:800">1&nbsp;337 Kč</td>
@@ -1535,7 +1486,7 @@
           <td><strong>1,82 %</strong></td>
           <td>1&nbsp;320 Kč</td>
         </tr><tr>
-          <td><span class="metal-dot metal-ag"></span>Stříbro: Praha</td>
+          <td><span class="metal-dot metal-ag"></span>Silver: Praha</td>
           <td>EUR</td>
           <td style="color:var(--green);font-weight:800">€53,85</td>
           <td style="color:var(--red);font-weight:800">€54,83</td>
@@ -1543,7 +1494,7 @@
           <td><strong>1,82 %</strong></td>
           <td>€54,15</td>
         </tr><tr>
-          <td><span class="metal-dot metal-pt"></span>Platina: Londýn</td>
+          <td><span class="metal-dot metal-pt"></span>Platinum: Londýn</td>
           <td>USD</td>
           <td style="color:var(--green);font-weight:800">$1,672</td>
           <td style="color:var(--red);font-weight:800">$1,693</td>
@@ -1551,7 +1502,7 @@
           <td><strong>1,21 %</strong></td>
           <td>$1,680</td>
         </tr><tr>
-          <td><span class="metal-dot metal-pt"></span>Platina: Londýn</td>
+          <td><span class="metal-dot metal-pt"></span>Platinum: Londýn</td>
           <td>EUR</td>
           <td style="color:var(--green);font-weight:800">€1.554</td>
           <td style="color:var(--red);font-weight:800">€1.573</td>
@@ -1583,23 +1534,23 @@
     <aside class="sidebar">
       <section class="card order-panel">
         <div class="card-header">
-          <h2>Obchodní panel</h2>
+          <h2>Order panel</h2>
         </div>
         <div class="card-body">
           <div class="switch">
-            <button id="sideKoupit" class="active buy" type="button">NÁKUP / BID</button>
-            <button id="sideProdat" type="button" class="">PRODEJ / OFFER</button>
+            <button id="sideBuy" class="active buy" type="button">BUY / BID</button>
+            <button id="sideSell" type="button" class="">SELL / OFFER</button>
           </div>
 
           <div class="panel-grid">
             <div class="form-group">
-              <label for="ticketTrh">Trh</label>
-              <select id="ticketTrh"><option value="AUXZU_USD">Zlato: Curych / USD</option><option value="AUXZU_EUR">Zlato: Curych / EUR</option><option value="AUXZU_CHF">Zlato: Curych / CHF</option><option value="AUXZU_CZK">Zlato: Curych / CZK</option><option value="AUXLN_USD">Zlato: Londýn / USD</option><option value="AUXLN_EUR">Zlato: Londýn / EUR</option><option value="AUXLN_CHF">Zlato: Londýn / CHF</option><option value="AUXPRG_CZK">Zlato: Praha / CZK</option><option value="AUXPRG_EUR">Zlato: Praha / EUR</option><option value="AUXDE_EUR">Zlato: Frankfurt / EUR</option><option value="AUXDE_CHF">Zlato: Frankfurt / CHF</option><option value="AGXZU_USD">Stříbro: Curych / USD</option><option value="AGXZU_EUR">Stříbro: Curych / EUR</option><option value="AGXZU_CHF">Stříbro: Curych / CHF</option><option value="AGXPRG_CZK">Stříbro: Praha / CZK</option><option value="AGXPRG_EUR">Stříbro: Praha / EUR</option><option value="PTXLN_USD">Platina: Londýn / USD</option><option value="PTXLN_EUR">Platina: Londýn / EUR</option><option value="PDXLN_USD">Palladium: Londýn / USD</option><option value="PDXLN_EUR">Palladium: Londýn / EUR</option></select>
+              <label for="ticketMarket">Market</label>
+              <select id="ticketMarket"><option value="AUXZU_USD">Gold: Curych / USD</option><option value="AUXZU_EUR">Gold: Curych / EUR</option><option value="AUXZU_CHF">Gold: Curych / CHF</option><option value="AUXZU_CZK">Gold: Curych / CZK</option><option value="AUXLN_USD">Gold: Londýn / USD</option><option value="AUXLN_EUR">Gold: Londýn / EUR</option><option value="AUXLN_CHF">Gold: Londýn / CHF</option><option value="AUXPRG_CZK">Gold: Praha / CZK</option><option value="AUXPRG_EUR">Gold: Praha / EUR</option><option value="AUXDE_EUR">Gold: Frankfurt / EUR</option><option value="AUXDE_CHF">Gold: Frankfurt / CHF</option><option value="AGXZU_USD">Silver: Curych / USD</option><option value="AGXZU_EUR">Silver: Curych / EUR</option><option value="AGXZU_CHF">Silver: Curych / CHF</option><option value="AGXPRG_CZK">Silver: Praha / CZK</option><option value="AGXPRG_EUR">Silver: Praha / EUR</option><option value="PTXLN_USD">Platinum: Londýn / USD</option><option value="PTXLN_EUR">Platinum: Londýn / EUR</option><option value="PDXLN_USD">Palladium: Londýn / USD</option><option value="PDXLN_EUR">Palladium: Londýn / EUR</option></select>
             </div>
 
             <div class="form-group">
-              <label for="ticketMěna">Měna</label>
-              <select id="ticketMěna">
+              <label for="ticketCurrency">Currency</label>
+              <select id="ticketCurrency">
                 <option>CZK</option>
                 <option>EUR</option>
                 <option>CHF</option>
@@ -1608,36 +1559,36 @@
             </div>
 
             <div class="form-group">
-              <label for="ticketType">Typ pokynu</label>
+              <label for="ticketType">Order type</label>
               <select id="ticketType">
-                <option value="TIL_CANCEL">Platné do zrušení</option>
-                <option value="TIL_TIME">Platné do času</option>
-                <option value="IMMEDIATE">Ihned</option>
-                <option value="FILL_KILL">Vyplň nebo zruš</option>
+                <option value="TIL_CANCEL">Good until cancelled</option>
+                <option value="TIL_TIME">Good until time</option>
+                <option value="IMMEDIATE">Immediate</option>
+                <option value="FILL_KILL">Fill or kill</option>
               </select>
             </div>
 
             <div class="form-group">
-              <label for="ticketMnožství">Množství</label>
-              <input id="ticketMnožství" type="number" min="0.01" step="0.01" value="1.00">
+              <label for="ticketQuantity">Quantity</label>
+              <input id="ticketQuantity" type="number" min="0.01" step="0.01" value="1.00">
             </div>
 
             <div class="form-group">
-              <label for="ticketLimit">Limitní cena</label>
+              <label for="ticketLimit">Limit price</label>
               <input id="ticketLimit" type="number" min="0" step="0.01" value="0">
             </div>
 
             <div class="summary">
-              <div class="summary-line"><span>Akce</span><strong id="summaryAkce">NÁKUP / BID</strong></div>
-              <div class="summary-line"><span>Množství</span><strong id="summaryMnožství">1 oz</strong></div>
-              <div class="summary-line"><span>Limitní cena</span><strong id="summaryLimit">$4,341 / oz</strong></div>
-              <div class="summary-line"><span>Rezerva na poplatek</span><strong id="summaryFee">$43.41</strong></div>
-              <div class="summary-line"><span>Odhadovaná hodnota</span><strong id="summaryTotal">$4,385</strong></div>
+              <div class="summary-line"><span>Action</span><strong id="summaryAction">BUY / BID</strong></div>
+              <div class="summary-line"><span>Quantity</span><strong id="summaryQuantity">1 oz</strong></div>
+              <div class="summary-line"><span>Limit price</span><strong id="summaryLimit">$4,341 / oz</strong></div>
+              <div class="summary-line"><span>Commission reserve</span><strong id="summaryFee">$43.41</strong></div>
+              <div class="summary-line"><span>Estimated consideration</span><strong id="summaryTotal">$4,385</strong></div>
             </div>
 
             <div class="footer-buttons">
               <button class="btn" id="resetTicket" type="button">Reset</button>
-              <button class="btn btn-primary" id="submitTicket" type="button">Zkontrolovat pokyn</button>
+              <button class="btn btn-primary" id="submitTicket" type="button">Review order</button>
             </div>
 
             <div class="warning">
@@ -1649,7 +1600,7 @@
       </section>
 
       <section class="card side-card">
-        <div class="card-header"><strong>Zdroj cen</strong></div>
+        <div class="card-header"><strong>Live price source</strong></div>
         <div class="card-body">
           <p>
             Frontend volá endpoint <strong>/api/prices/latest</strong>. V Netlify variantě jej obsluhuje funkce
@@ -1668,17 +1619,17 @@
   <div class="modal-backdrop" id="helpModal">
     <div class="modal">
       <div class="modal-header">
-        <h2>Co je obchodní tabule?</h2>
-        <button class="btn" id="closeHelp" type="button">Zavřít</button>
+        <h2>What is the order board?</h2>
+        <button class="btn" id="closeHelp" type="button">Close</button>
       </div>
       <div class="modal-body">
         <p>
-          Trh Board zobrazuje nejlepší nákupní a prodejní úrovně podle kovu, měny a lokace.
+          Market Board zobrazuje nejlepší nákupní a prodejní úrovně podle kovu, měny a lokace.
           Kliknutím na konkrétní cenu se vyplní order panel.
         </p>
         <p>
-          <strong>Nejlepší poptávky : PRODEJ</strong> znamená, že proti těmto nákupním cenám může klient prodávat.
-          <strong>NÁKUP : Nejlepší nabídky</strong> znamená, že proti těmto prodejním cenám může klient nakupovat.
+          <strong>Best bids : SELL</strong> znamená, že proti těmto nákupním cenám může klient prodávat.
+          <strong>BUY : Best offers</strong> znamená, že proti těmto prodejním cenám může klient nakupovat.
         </p>
         <p>
           Tato šablona podporuje demo data i živé ceny přes backend/proxy. V produkci musí být doplněn
@@ -1694,33 +1645,34 @@
   <div class="modal-backdrop" id="marketsModal">
     <div class="modal">
       <div class="modal-header">
-        <h2>Upravit trhů</h2>
-        <button class="btn" id="closeTrhs" type="button">Zavřít</button>
+        <h2>Edit markets</h2>
+        <button class="btn" id="closeMarkets" type="button">Close</button>
       </div>
       <div class="modal-body">
         <p>Vyberte trhy, které se mají zobrazovat v tabuli.</p>
         <div id="marketCheckboxes"></div>
       </div>
       <div class="modal-footer">
-        <button class="btn" id="selectAllTrhs" type="button">Vybrat vše</button>
-        <button class="btn" id="clearAllTrhs" type="button">Vymazat vše</button>
-        <button class="btn btn-primary" id="applyTrhs" type="button">Použít</button>
+        <button class="btn" id="selectAllMarkets" type="button">Select all</button>
+        <button class="btn" id="clearAllMarkets" type="button">Clear all</button>
+        <button class="btn btn-primary" id="applyMarkets" type="button">Apply</button>
       </div>
     </div>
   </div>
 
 
   <div class="modal-backdrop" id="accountModal">
-    <div class="modal" style="max-width: 1050px; width: calc(100% - 30px);">
+    <div class="modal">
       <div class="modal-header">
-        <h2>Účet klienta</h2>
-        <button class="btn" data-close="accountModal" type="button">Zavřít</button>
+        <h2>Account overview</h2>
+        <button class="btn" data-close="accountModal" type="button">Close</button>
       </div>
       <div class="modal-body">
-        <div id="accountCards" class="account-cards-grid">
-          <div class="account-card-backend"><h3>Načítám klientské karty…</h3></div>
-        </div>
-        <p class="small-note">Karty účtu jsou načítány z backendu. V produkci musí být chráněny přihlášením a role-based access control.</p>
+        <p>Tento modul je připravený jako klientský přehled. V ostré verzi se sem napojí reálná klientská evidence.</p>
+        <div class="info-box"><strong>Cash balance:</strong> 0,00 CZK / 0,00 EUR / 0,00 CHF</div>
+        <div class="info-box"><strong>Metal balance:</strong> Au 0,000 oz · Ag 0,000 oz · Pt 0,000 oz · Pd 0,000 oz</div>
+        <div class="info-box"><strong>KYC status:</strong> Pending / Not connected</div>
+        <p class="small-note">Produkční verze musí načítat zůstatky z backendu po přihlášení klienta. Nikdy je nepočítejte pouze ve frontendu.</p>
       </div>
       <div class="modal-footer">
         <button class="btn btn-primary" data-close="accountModal" type="button">OK</button>
@@ -1731,15 +1683,15 @@
   <div class="modal-backdrop" id="depositModal">
     <div class="modal">
       <div class="modal-header">
-        <h2>Vklad prostředků</h2>
-        <button class="btn" data-close="depositModal" type="button">Zavřít</button>
+        <h2>Deposit funds</h2>
+        <button class="btn" data-close="depositModal" type="button">Close</button>
       </div>
       <div class="modal-body">
         <p>Zde bude klient zadávat vklad prostředků nebo převod kovu do evidence.</p>
         <div class="modal-form-grid">
           <div class="form-group">
-            <label for="depositMěna">Měna</label>
-            <select id="depositMěna">
+            <label for="depositCurrency">Currency</label>
+            <select id="depositCurrency">
               <option>CZK</option>
               <option>EUR</option>
               <option>CHF</option>
@@ -1757,7 +1709,7 @@
         <p class="small-note">Před přijetím vyšších částek doplňte AML limity, kontrolu zdroje prostředků a párování bankovních plateb.</p>
       </div>
       <div class="modal-footer">
-        <button class="btn" data-close="depositModal" type="button">Zrušit</button>
+        <button class="btn" data-close="depositModal" type="button">Cancel</button>
         <button class="btn btn-primary" id="depositPreview" type="button">Generate payment instruction</button>
       </div>
     </div>
@@ -1766,8 +1718,8 @@
   <div class="modal-backdrop" id="statementModal">
     <div class="modal">
       <div class="modal-header">
-        <h2>Výpis</h2>
-        <button class="btn" data-close="statementModal" type="button">Zavřít</button>
+        <h2>Statement</h2>
+        <button class="btn" data-close="statementModal" type="button">Close</button>
       </div>
       <div class="modal-body">
         <p>Ukázka výpisu klientského účtu. V ostré verzi bude výpis generovaný z databáze pohybů.</p>
@@ -1782,30 +1734,30 @@
             </tr>
           </thead>
           <tbody>
-            <tr><td>Dnes</td><td>Order preview</td><td>Zlato</td><td>—</td><td>Draft</td></tr>
-            <tr><td>Dnes</td><td>Live price refresh</td><td>Trh data</td><td>—</td><td>OK</td></tr>
+            <tr><td>Dnes</td><td>Order preview</td><td>Gold</td><td>—</td><td>Draft</td></tr>
+            <tr><td>Dnes</td><td>Live price refresh</td><td>Market data</td><td>—</td><td>OK</td></tr>
           </tbody>
         </table>
         <p class="small-note">Produkčně doplnit CSV/PDF export, auditní stopu, číslo pokynu a vazbu na klientský účet.</p>
       </div>
       <div class="modal-footer">
-        <button class="btn" id="exportVýpis" type="button">Export CSV</button>
+        <button class="btn" id="exportStatement" type="button">Export CSV</button>
         <button class="btn btn-primary" data-close="statementModal" type="button">OK</button>
       </div>
     </div>
   </div>
 
-  <div class="modal-backdrop" id="openÚčetModal">
+  <div class="modal-backdrop" id="openAccountModal">
     <div class="modal">
       <div class="modal-header">
-        <h2>Otevřít účet</h2>
-        <button class="btn" data-close="openÚčetModal" type="button">Zavřít</button>
+        <h2>Open account</h2>
+        <button class="btn" data-close="openAccountModal" type="button">Close</button>
       </div>
       <div class="modal-body">
         <p>Formulář pro založení účtu. V ostré verzi bude navázán na registraci, e-mailové ověření a KYC/AML.</p>
         <div class="modal-form-grid">
           <div class="form-group">
-            <label for="regName">Jméno / společnost</label>
+            <label for="regName">Name / Company</label>
             <input id="regName" type="text" placeholder="Jméno nebo název společnosti">
           </div>
           <div class="form-group">
@@ -1813,12 +1765,12 @@
             <input id="regEmail" type="email" placeholder="email@example.com">
           </div>
           <div class="form-group">
-            <label for="regZemě">Země</label>
-            <input id="regZemě" type="text" placeholder="Czech Republic / Switzerland">
+            <label for="regCountry">Country</label>
+            <input id="regCountry" type="text" placeholder="Czech Republic / Switzerland">
           </div>
           <div class="form-group">
-            <label for="regMěna">Základní měna</label>
-            <select id="regMěna">
+            <label for="regCurrency">Base currency</label>
+            <select id="regCurrency">
               <option>CZK</option>
               <option>EUR</option>
               <option>CHF</option>
@@ -1827,50 +1779,12 @@
           </div>
         </div>
         <div class="info-box">
-          <strong>Další krok:</strong> vytvoření účtu, souhlas s VOP, ověření e-mailu a AML/KYC identifikace.
+          <strong>Next step:</strong> vytvoření účtu, souhlas s VOP, ověření e-mailu a AML/KYC identifikace.
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn" data-close="openÚčetModal" type="button">Zrušit</button>
-        <button class="btn btn-primary" id="registerPreview" type="button">Spustit registraci</button>
-      </div>
-    </div>
-  </div>
-
-
-  <div class="modal-backdrop" id="chartModal">
-    <div class="modal" style="max-width: 980px; width: calc(100% - 30px);">
-      <div class="modal-header">
-        <h2 id="chartModalTitle">Detail trhu</h2>
-        <button class="btn" data-close="chartModal" type="button">Zavřít</button>
-      </div>
-      <div class="modal-body">
-        <div class="chart-summary">
-          <div class="chart-metric"><span class="label">Spot</span><span class="value" id="chartSpotHodnota">—</span></div>
-          <div class="chart-metric"><span class="label">Nejlepší bid</span><span class="value" id="chartBidHodnota">—</span></div>
-          <div class="chart-metric"><span class="label">Nejlepší offer</span><span class="value" id="chartOfferHodnota">—</span></div>
-          <div class="chart-metric"><span class="label">Aktuální spread</span><span class="value" id="chartSpreadHodnota">—</span></div>
-        </div>
-        <div class="chart-grid">
-          <div class="chart-card">
-            <div class="chart-title-row">
-              <h3>Graf spot ceny</h3>
-              <span class="chart-note" id="chartSpotNote">Posledních 30 bodů</span>
-            </div>
-            <canvas id="spotChartCanvas" class="chart-canvas" width="900" height="240"></canvas>
-          </div>
-          <div class="chart-card">
-            <div class="chart-title-row">
-              <h3>Historie spreadu</h3>
-              <span class="chart-note" id="chartSpreadNote">Bid / offer spread v %</span>
-            </div>
-            <canvas id="spreadChartCanvas" class="chart-canvas" width="900" height="240"></canvas>
-          </div>
-        </div>
-        <p class="small-note">Graf vychází z aktuálně dostupných cen a z lokálně generované časové řady pro náhled spot trendu a spreadu. V produkci lze napojit skutečnou historii z backendu.</p>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-primary" data-close="chartModal" type="button">OK</button>
+        <button class="btn" data-close="openAccountModal" type="button">Cancel</button>
+        <button class="btn btn-primary" id="registerPreview" type="button">Start registration</button>
       </div>
     </div>
   </div>
@@ -1897,13 +1811,13 @@
     };
 
     const MARKETS = [
-      { id: "AUXZU", metal: "AU", metalName: "Zlato", location: "Curych", currencies: ["USD", "EUR", "CHF", "CZK"] },
-      { id: "AUXLN", metal: "AU", metalName: "Zlato", location: "Londýn", currencies: ["USD", "EUR", "CHF"] },
-      { id: "AUXPRG", metal: "AU", metalName: "Zlato", location: "Praha", currencies: ["CZK", "EUR"] },
-      { id: "AUXDE", metal: "AU", metalName: "Zlato", location: "Frankfurt", currencies: ["EUR", "CHF"] },
-      { id: "AGXZU", metal: "AG", metalName: "Stříbro", location: "Curych", currencies: ["USD", "EUR", "CHF"] },
-      { id: "AGXPRG", metal: "AG", metalName: "Stříbro", location: "Praha", currencies: ["CZK", "EUR"] },
-      { id: "PTXLN", metal: "PT", metalName: "Platina", location: "Londýn", currencies: ["USD", "EUR"] },
+      { id: "AUXZU", metal: "AU", metalName: "Gold", location: "Curych", currencies: ["USD", "EUR", "CHF", "CZK"] },
+      { id: "AUXLN", metal: "AU", metalName: "Gold", location: "Londýn", currencies: ["USD", "EUR", "CHF"] },
+      { id: "AUXPRG", metal: "AU", metalName: "Gold", location: "Praha", currencies: ["CZK", "EUR"] },
+      { id: "AUXDE", metal: "AU", metalName: "Gold", location: "Frankfurt", currencies: ["EUR", "CHF"] },
+      { id: "AGXZU", metal: "AG", metalName: "Silver", location: "Curych", currencies: ["USD", "EUR", "CHF"] },
+      { id: "AGXPRG", metal: "AG", metalName: "Silver", location: "Praha", currencies: ["CZK", "EUR"] },
+      { id: "PTXLN", metal: "PT", metalName: "Platinum", location: "Londýn", currencies: ["USD", "EUR"] },
       { id: "PDXLN", metal: "PD", metalName: "Palladium", location: "Londýn", currencies: ["USD", "EUR"] }
     ];
 
@@ -1916,16 +1830,15 @@
 
     let spot = structuredClone(DEMO_SPOT_PER_TOZ);
     let currentUnit = "TOZ";
-    let selectedTrhs = new Set();
+    let selectedMarkets = new Set();
     let orderSide = "BUY";
     let currentView = "board";
     let lastRenderedRows = [];
-    const historyCache = new Map();
 
     const el = (id) => document.getElementById(id);
 
-    function initSelectedTrhs() {
-      MARKETS.forEach(m => m.currencies.forEach(c => selectedTrhs.add(m.id + "_" + c)));
+    function initSelectedMarkets() {
+      MARKETS.forEach(m => m.currencies.forEach(c => selectedMarkets.add(m.id + "_" + c)));
     }
 
     function unitFactorFromToz(unit) {
@@ -1934,17 +1847,17 @@
       return 1;
     }
 
-    function toDisplayCena(pricePerToz, unit) {
+    function toDisplayPrice(pricePerToz, unit) {
       return pricePerToz / unitFactorFromToz(unit);
     }
 
-    function toTozMnožství(qty, unit) {
+    function toTozQuantity(qty, unit) {
       if (unit === "KG") return qty * 32.1507465686;
       if (unit === "G") return qty / 31.1034768;
       return qty;
     }
 
-    function fromTozMnožství(qtyToz, unit) {
+    function fromTozQuantity(qtyToz, unit) {
       if (unit === "KG") return qtyToz / 32.1507465686;
       if (unit === "G") return qtyToz * 31.1034768;
       return qtyToz;
@@ -1962,13 +1875,13 @@
 
     function formatMoney(value, currency) {
       const locale = currency === "CZK" ? "cs-CZ" : currency === "CHF" ? "de-CH" : currency === "EUR" ? "de-DE" : "en-US";
-      const numericHodnota = Number(value || 0);
-      const fractionDigits = Math.abs(numericHodnota) >= 1000 ? 0 : 2;
+      const numericValue = Number(value || 0);
+      const fractionDigits = Math.abs(numericValue) >= 1000 ? 0 : 2;
 
       const formatted = new Intl.NumberFormat(locale, {
         minimumFractionDigits: fractionDigits,
         maximumFractionDigits: fractionDigits
-      }).format(numericHodnota);
+      }).format(numericValue);
 
       if (currency === "USD") return "$" + formatted;
       if (currency === "EUR") return "€" + formatted;
@@ -2040,11 +1953,11 @@
       const currencyFilter = el("currencyFilter").value;
       const metalFilter = el("metalFilter").value;
       const minOrder = Number(el("minOrder").value || 0);
-      const minToz = toTozMnožství(minOrder, currentUnit);
+      const minToz = toTozQuantity(minOrder, currentUnit);
 
       return allRows().filter(row => {
         const hasMin = row.bids.some(x => x.qtyToz >= minToz) || row.offers.some(x => x.qtyToz >= minToz);
-        return selectedTrhs.has(row.key)
+        return selectedMarkets.has(row.key)
           && (currencyFilter === "ALL" || row.currency === currencyFilter)
           && (metalFilter === "ALL" || row.market.metal === metalFilter)
           && hasMin;
@@ -2052,8 +1965,8 @@
     }
 
     function renderLevel(row, side, level, index) {
-      const priceDisplay = toDisplayCena(level.price, currentUnit);
-      const qtyDisplay = fromTozMnožství(level.qtyToz, currentUnit);
+      const priceDisplay = toDisplayPrice(level.price, currentUnit);
+      const qtyDisplay = fromTozQuantity(level.qtyToz, currentUnit);
       const div = document.createElement("div");
       div.className = "level " + (index === 0 ? "best " : "") + side;
       div.innerHTML = `
@@ -2075,12 +1988,12 @@
       const rows = filteredRows();
       lastRenderedRows = rows;
 
-      el("totalTrhs").textContent = allRows().length;
-      el("visibleTrhs").textContent = rows.length;
+      el("totalMarkets").textContent = allRows().length;
+      el("visibleMarkets").textContent = rows.length;
 
       if (!rows.length) {
-        tbody.innerHTML = `<tr><td colspan="9">No trhů match your filters.</td></tr>`;
-        renderTicketTrhOptions();
+        tbody.innerHTML = `<tr><td colspan="9">No markets match your filters.</td></tr>`;
+        renderTicketMarketOptions();
         return;
       }
 
@@ -2108,18 +2021,18 @@
 
         const chartCell = document.createElement("td");
         chartCell.className = "chart-cell";
-        chartCell.innerHTML = `<button class="chart-btn" type="button" title="Detail ceny">↗</button>`;
+        chartCell.innerHTML = `<button class="chart-btn" type="button" title="Price detail">↗</button>`;
         chartCell.querySelector("button").addEventListener("click", () => showMiniChart(row));
         tr.appendChild(chartCell);
         tr.appendChild(offerCell);
         tbody.appendChild(tr);
       });
 
-      renderTicketTrhOptions();
+      renderTicketMarketOptions();
     }
 
-    function renderTicketTrhOptions() {
-      const select = el("ticketTrh");
+    function renderTicketMarketOptions() {
+      const select = el("ticketMarket");
       const current = select.value;
       select.innerHTML = "";
 
@@ -2133,10 +2046,10 @@
 
       if ([...select.options].some(o => o.value === current)) select.value = current;
       if (!select.value && select.options.length) select.value = select.options[0].value;
-      syncMěnaFromTrh();
+      syncCurrencyFromMarket();
     }
 
-    function renderHloubka() {
+    function renderDepth() {
       const tbody = el("depthRows");
       tbody.innerHTML = "";
       filteredRows().forEach(row => {
@@ -2149,17 +2062,17 @@
         tr.innerHTML = `
           <td><span class="metal-dot ${metalClass(row.market.metal)}"></span>${row.market.metalName}: ${row.market.location}</td>
           <td>${row.currency}</td>
-          <td style="color:var(--green);font-weight:800">${formatMoney(toDisplayCena(bestBid.price, currentUnit), row.currency)}</td>
-          <td style="color:var(--red);font-weight:800">${formatMoney(toDisplayCena(bestOffer.price, currentUnit), row.currency)}</td>
-          <td>${formatQty(fromTozMnožství(bidQty, currentUnit))}</td>
-          <td>${formatQty(fromTozMnožství(offerQty, currentUnit))}</td>
-          <td>${formatQty(fromTozMnožství(liquidity, currentUnit))}</td>
+          <td style="color:var(--green);font-weight:800">${formatMoney(toDisplayPrice(bestBid.price, currentUnit), row.currency)}</td>
+          <td style="color:var(--red);font-weight:800">${formatMoney(toDisplayPrice(bestOffer.price, currentUnit), row.currency)}</td>
+          <td>${formatQty(fromTozQuantity(bidQty, currentUnit))}</td>
+          <td>${formatQty(fromTozQuantity(offerQty, currentUnit))}</td>
+          <td>${formatQty(fromTozQuantity(liquidity, currentUnit))}</td>
         `;
         tbody.appendChild(tr);
       });
     }
 
-    function renderSpready() {
+    function renderSpreads() {
       const tbody = el("spreadRows");
       tbody.innerHTML = "";
       filteredRows().forEach(row => {
@@ -2171,11 +2084,11 @@
         tr.innerHTML = `
           <td><span class="metal-dot ${metalClass(row.market.metal)}"></span>${row.market.metalName}: ${row.market.location}</td>
           <td>${row.currency}</td>
-          <td style="color:var(--green);font-weight:800">${formatMoney(toDisplayCena(bestBid, currentUnit), row.currency)}</td>
-          <td style="color:var(--red);font-weight:800">${formatMoney(toDisplayCena(bestOffer, currentUnit), row.currency)}</td>
-          <td>${formatMoney(toDisplayCena(spread, currentUnit), row.currency)}</td>
+          <td style="color:var(--green);font-weight:800">${formatMoney(toDisplayPrice(bestBid, currentUnit), row.currency)}</td>
+          <td style="color:var(--red);font-weight:800">${formatMoney(toDisplayPrice(bestOffer, currentUnit), row.currency)}</td>
+          <td>${formatMoney(toDisplayPrice(spread, currentUnit), row.currency)}</td>
           <td><strong>${spreadPct.toFixed(2).replace(".", ",")} %</strong></td>
-          <td>${formatMoney(toDisplayCena(row.base, currentUnit), row.currency)}</td>
+          <td>${formatMoney(toDisplayPrice(row.base, currentUnit), row.currency)}</td>
         `;
         tbody.appendChild(tr);
       });
@@ -2184,8 +2097,8 @@
     function renderAll() {
       currentUnit = el("unitSelect").value;
       renderBoard();
-      renderHloubka();
-      renderSpready();
+      renderDepth();
+      renderSpreads();
       updateSummary();
     }
 
@@ -2197,11 +2110,11 @@
 
       const map = {
         board: "viewOrderBoard",
-        depth: "viewHloubka",
-        spreads: "viewSpready"
+        depth: "viewDepth",
+        spreads: "viewSpreads"
       };
 
-      ["viewOrderBoard", "viewHloubka", "viewSpready"].forEach(id => {
+      ["viewOrderBoard", "viewDepth", "viewSpreads"].forEach(id => {
         const button = el(id);
         if (button) button.classList.remove("active-view");
       });
@@ -2217,44 +2130,44 @@
 
     function fillTicket(row, nextSide, level) {
       setSide(nextSide);
-      el("ticketTrh").value = row.key;
-      el("ticketMěna").value = row.currency;
-      const displayQty = fromTozMnožství(level.qtyToz, currentUnit);
-      const displayCena = toDisplayCena(level.price, currentUnit);
-      el("ticketMnožství").value = Math.max(displayQty, Number(el("minOrder").value || 0)).toFixed(currentUnit === "G" ? 0 : 2);
-      el("ticketLimit").value = displayCena.toFixed(displayCena > 1000 ? 0 : 2);
+      el("ticketMarket").value = row.key;
+      el("ticketCurrency").value = row.currency;
+      const displayQty = fromTozQuantity(level.qtyToz, currentUnit);
+      const displayPrice = toDisplayPrice(level.price, currentUnit);
+      el("ticketQuantity").value = Math.max(displayQty, Number(el("minOrder").value || 0)).toFixed(currentUnit === "G" ? 0 : 2);
+      el("ticketLimit").value = displayPrice.toFixed(displayPrice > 1000 ? 0 : 2);
       updateSummary();
     }
 
     function setSide(nextSide) {
       orderSide = nextSide;
-      el("sideKoupit").className = nextSide === "BUY" ? "active buy" : "";
-      el("sideProdat").className = nextSide === "SELL" ? "active sell" : "";
+      el("sideBuy").className = nextSide === "BUY" ? "active buy" : "";
+      el("sideSell").className = nextSide === "SELL" ? "active sell" : "";
       updateSummary();
     }
 
     function selectedTicketRow() {
-      const key = el("ticketTrh").value;
+      const key = el("ticketMarket").value;
       return allRows().find(row => row.key === key) || allRows()[0];
     }
 
-    function syncMěnaFromTrh() {
+    function syncCurrencyFromMarket() {
       const row = selectedTicketRow();
-      if (row) el("ticketMěna").value = row.currency;
+      if (row) el("ticketCurrency").value = row.currency;
       updateSummary();
     }
 
     function updateSummary() {
       const row = selectedTicketRow();
       if (!row) return;
-      const quantity = Number(el("ticketMnožství").value || 0);
+      const quantity = Number(el("ticketQuantity").value || 0);
       const limit = Number(el("ticketLimit").value || 0);
-      const currency = el("ticketMěna").value || row.currency;
+      const currency = el("ticketCurrency").value || row.currency;
       const gross = quantity * limit;
       const fee = gross * (CONFIG.commissionReserveBps / 10000);
       const total = orderSide === "BUY" ? gross + fee : gross - fee;
-      el("summaryAkce").textContent = orderSide === "BUY" ? "NÁKUP / BID" : "PRODEJ / OFFER";
-      el("summaryMnožství").textContent = `${quantity || 0} ${unitLabel()}`;
+      el("summaryAction").textContent = orderSide === "BUY" ? "BUY / BID" : "SELL / OFFER";
+      el("summaryQuantity").textContent = `${quantity || 0} ${unitLabel()}`;
       el("summaryLimit").textContent = formatMoney(limit || 0, currency) + " / " + unitLabel();
       el("summaryFee").textContent = formatMoney(fee || 0, currency);
       el("summaryTotal").textContent = formatMoney(total || 0, currency);
@@ -2262,18 +2175,18 @@
 
     function showTip(ev, row, side, level) {
       const tip = el("orderTip");
-      const action = side === "bids" ? "Prodej" : "Nákup";
-      const price = toDisplayCena(level.price, currentUnit);
-      const qDisplay = fromTozMnožství(level.qtyToz, currentUnit);
+      const action = side === "bids" ? "Sell" : "Buy";
+      const price = toDisplayPrice(level.price, currentUnit);
+      const qDisplay = fromTozQuantity(level.qtyToz, currentUnit);
       const value = price * qDisplay;
       tip.innerHTML = `
         <h3>${row.market.metalName}: ${action} in ${row.market.location}</h3>
         <table>
           <tbody>
-            <tr><th>Cena</th><td>${formatMoney(price, row.currency)} / ${unitLabel()}</td></tr>
-            <tr><th>Množství</th><td>${formatQty(qDisplay)}</td></tr>
-            <tr><th>Hodnota</th><td><strong>${formatMoney(value, row.currency)}</strong></td></tr>
-            <tr><th>Trh</th><td>${row.currency} · ${row.market.id}</td></tr>
+            <tr><th>Price</th><td>${formatMoney(price, row.currency)} / ${unitLabel()}</td></tr>
+            <tr><th>Quantity</th><td>${formatQty(qDisplay)}</td></tr>
+            <tr><th>Value</th><td><strong>${formatMoney(value, row.currency)}</strong></td></tr>
+            <tr><th>Market</th><td>${row.currency} · ${row.market.id}</td></tr>
           </tbody>
         </table>
       `;
@@ -2291,148 +2204,9 @@
       el("orderTip").style.display = "none";
     }
 
-    function seededNoise(seed) {
-      const x = Math.sin(seed) * 10000;
-      return x - Math.floor(x);
-    }
-
-    function generateHistorie(row) {
-      const cacheKey = row.key + '_' + currentUnit;
-      if (historyCache.has(cacheKey)) return historyCache.get(cacheKey);
-      const points = [];
-      const spreadPoints = [];
-      const now = Date.now();
-      const baseSpreadPct = ((row.offers[0].price - row.bids[0].price) / row.base) * 100;
-      for (let i = 29; i >= 0; i--) {
-        const ts = now - i * 24 * 60 * 60 * 1000;
-        const drift = (29 - i) * 0.0012;
-        const noise = (seededNoise((i + 3) * (row.base + row.market.id.length)) - 0.5) * 0.03;
-        const spreadNoise = (seededNoise((i + 11) * (row.offers[0].price + row.currency.charCodeAt(0))) - 0.5) * 0.22;
-        const spotHodnota = toDisplayCena(row.base * (1 + drift + noise), currentUnit);
-        const spreadHodnota = Math.max(0.05, baseSpreadPct + spreadNoise);
-        points.push({ ts, value: spotHodnota });
-        spreadPoints.push({ ts, value: spreadHodnota });
-      }
-      const payload = { points, spreadPoints };
-      historyCache.set(cacheKey, payload);
-      return payload;
-    }
-
-    function drawLineChart(canvas, series, opts = {}) {
-      const ctx = canvas.getContext('2d');
-      const width = canvas.width;
-      const height = canvas.height;
-      ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, width, height);
-      const pad = { top: 18, right: 18, bottom: 28, left: 62 };
-      const xs = series.map(p => p.ts);
-      const ys = series.map(p => p.value);
-      const minY = Math.min(...ys) * 0.996;
-      const maxY = Math.max(...ys) * 1.004;
-      const xMin = Math.min(...xs);
-      const xMax = Math.max(...xs);
-      const chartW = width - pad.left - pad.right;
-      const chartH = height - pad.top - pad.bottom;
-      const xPos = (x) => pad.left + ((x - xMin) / (xMax - xMin || 1)) * chartW;
-      const yPos = (y) => pad.top + (1 - ((y - minY) / (maxY - minY || 1))) * chartH;
-
-      ctx.strokeStyle = '#dfe6ee';
-      ctx.lineWidth = 1;
-      ctx.font = '11px Arial';
-      ctx.fillStyle = '#6a7a8b';
-      for (let i = 0; i < 4; i++) {
-        const y = pad.top + (chartH / 3) * i;
-        ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(width - pad.right, y); ctx.stroke();
-      }
-      for (let i = 0; i < 5; i++) {
-        const ratio = i / 4;
-        const value = maxY - (maxY - minY) * ratio;
-        ctx.fillText(opts.yFormatter ? opts.yFormatter(value) : value.toFixed(2), 8, pad.top + chartH * ratio + 4);
-      }
-      const step = Math.max(1, Math.floor(series.length / 6));
-      for (let i = 0; i < series.length; i += step) {
-        const pt = series[i];
-        const x = xPos(pt.ts);
-        ctx.beginPath(); ctx.moveTo(x, pad.top); ctx.lineTo(x, pad.top + chartH); ctx.strokeStyle = '#f2f5f8'; ctx.stroke();
-        const d = new Date(pt.ts);
-        const label = new Intl.DateTimeFormat('cs-CZ', { day:'2-digit', month:'2-digit' }).format(d);
-        ctx.fillStyle = '#6a7a8b';
-        ctx.fillText(label, x - 15, height - 10);
-      }
-      ctx.beginPath();
-      ctx.strokeStyle = opts.color || '#1e5b98';
-      ctx.lineWidth = 2;
-      series.forEach((pt, idx) => {
-        const x = xPos(pt.ts), y = yPos(pt.value);
-        if (idx === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-      });
-      ctx.stroke();
-      const last = series[series.length - 1];
-      ctx.fillStyle = opts.color || '#1e5b98';
-      ctx.beginPath(); ctx.arc(xPos(last.ts), yPos(last.value), 4, 0, Math.PI * 2); ctx.fill();
-    }
-
-    function renderTicker() {
-      const ticker = el('priceTicker');
-      if (!ticker) return;
-      const metals = [
-        { key: 'AU', name: 'ZLATO', cls: 'gold' },
-        { key: 'AG', name: 'STŘÍBRO', cls: 'silver' },
-        { key: 'PT', name: 'PLATINA', cls: 'white' },
-        { key: 'PD', name: 'PALLADIUM', cls: 'white' }
-      ];
-      const block = metals.map(metal => {
-        const currencies = ['CZK', 'EUR', 'USD'].map(cur => `
-          <span><span class="ticker-currency">${cur}</span> <span class="ticker-price ${metal.cls}">${formatMoney(getSpot(metal.key, cur), cur)}</span></span>
-        `).join('');
-        return `<div class="ticker-item"><span class="ticker-label ${metal.cls}">${metal.name}</span><span class="ticker-currencies">${currencies}</span></div>`;
-      }).join('');
-      ticker.innerHTML = block + block;
-    }
-
-    async function showMiniChart(row) {
-      let history = generateHistory(row);
-      try {
-        const [priceRes, spreadRes] = await Promise.all([
-          fetch(`/api/prices/history?metal=${encodeURIComponent(row.market.metal)}&currency=${encodeURIComponent(row.currency)}&days=30`, { cache: 'no-store' }),
-          fetch(`/api/spreads/history?marketKey=${encodeURIComponent(row.key)}&days=30`, { cache: 'no-store' })
-        ]);
-        if (priceRes.ok) {
-          const priceData = await priceRes.json();
-          if (Array.isArray(priceData.history) && priceData.history.length > 1) {
-            history.points = priceData.history.map(p => ({
-              ts: new Date(p.capturedAt).getTime(),
-              value: toDisplayPrice(Number(p.priceToz), currentUnit)
-            }));
-          }
-        }
-        if (spreadRes.ok) {
-          const spreadData = await spreadRes.json();
-          if (Array.isArray(spreadData.history) && spreadData.history.length > 1) {
-            history.spreadPoints = spreadData.history.map(p => ({
-              ts: new Date(p.capturedAt).getTime(),
-              value: Number(p.spreadPct)
-            }));
-          }
-        }
-      } catch (error) {
-        console.warn('Historii cen se nepodařilo načíst, používám lokální náhled.', error);
-      }
-      el('chartModalTitle').textContent = `${row.market.metalName}: ${row.market.location} / ${row.currency}`;
-      el('chartSpotValue').textContent = `${formatMoney(toDisplayPrice(row.base, currentUnit), row.currency)} / ${unitLabel()}`;
-      el('chartBidValue').textContent = `${formatMoney(toDisplayPrice(row.bids[0].price, currentUnit), row.currency)} / ${unitLabel()}`;
-      el('chartOfferValue').textContent = `${formatMoney(toDisplayPrice(row.offers[0].price, currentUnit), row.currency)} / ${unitLabel()}`;
-      el('chartSpreadValue').textContent = `${(((row.offers[0].price - row.bids[0].price) / row.base) * 100).toFixed(2).replace('.', ',')} %`;
-      drawLineChart(el('spotChartCanvas'), history.points, {
-        color: '#b78a33',
-        yFormatter: (v) => formatMoney(v, row.currency)
-      });
-      drawLineChart(el('spreadChartCanvas'), history.spreadPoints, {
-        color: '#1e5b98',
-        yFormatter: (v) => v.toFixed(2).replace('.', ',') + ' %'
-      });
-      openModal('chartModal');
+    function showMiniChart(row) {
+      const message = `${row.market.metalName}: ${row.market.location} / ${row.currency}\n\nSpot basis: ${formatMoney(toDisplayPrice(row.base, currentUnit), row.currency)} / ${unitLabel()}\nBest bid: ${formatMoney(toDisplayPrice(row.bids[0].price, currentUnit), row.currency)}\nBest offer: ${formatMoney(toDisplayPrice(row.offers[0].price, currentUnit), row.currency)}\n\nV ostré verzi zde otevřete graf spot ceny a historii spreadu.`;
+      alert(message);
     }
 
     function setStatus(mode, message) {
@@ -2454,7 +2228,7 @@
       }).format(ts ? new Date(ts) : new Date());
     }
 
-    async function loadLiveCenas() {
+    async function loadLivePrices() {
       if (!CONFIG.useLiveEndpoint) {
         setStatus("demo", "Demo data");
         setLastUpdate();
@@ -2463,20 +2237,20 @@
       }
 
       try {
-        setStatus("demo", "Načítám živé ceny…");
+        setStatus("demo", "Loading live prices…");
         const response = await fetch(CONFIG.liveEndpoint, { cache: "no-store" });
         if (!response.ok) throw new Error("HTTP " + response.status);
         const data = await response.json();
 
         if (!data || !data.prices) throw new Error("Invalid price payload");
         spot = mergeSpotData(data.prices);
-        setStatus(data.mode === "demo" ? "demo" : "live", data.mode === "demo" ? "Demo fallback" : "Živé ceny");
+        setStatus(data.mode === "demo" ? "demo" : "live", data.mode === "demo" ? "Demo fallback" : "Live prices");
         setLastUpdate(data.timestamp || Date.now());
         renderAll();
       } catch (error) {
         console.warn("Live price loading failed:", error);
         spot = structuredClone(DEMO_SPOT_PER_TOZ);
-        setStatus("error", "Live ceny nedostupné – demo fallback");
+        setStatus("error", "Live failed – demo fallback");
         setLastUpdate();
         renderAll();
       }
@@ -2496,7 +2270,7 @@
       return merged;
     }
 
-    function renderTrhCheckboxes() {
+    function renderMarketCheckboxes() {
       const box = el("marketCheckboxes");
       box.innerHTML = "";
       allRows().forEach(row => {
@@ -2505,7 +2279,7 @@
         label.style.display = "block";
         label.style.padding = "7px 0";
         label.innerHTML = `
-          <input id="${id}" type="checkbox" ${selectedTrhs.has(row.key) ? "checked" : ""} data-key="${row.key}">
+          <input id="${id}" type="checkbox" ${selectedMarkets.has(row.key) ? "checked" : ""} data-key="${row.key}">
           ${row.market.metalName}: ${row.market.location} / ${row.currency}
         `;
         box.appendChild(label);
@@ -2524,122 +2298,69 @@
       const row = filteredRows()[0] || allRows()[0];
       if (!row) return;
       setSide("BUY");
-      el("ticketTrh").value = row.key;
-      el("ticketMěna").value = row.currency;
-      el("ticketMnožství").value = "1.00";
-      el("ticketLimit").value = toDisplayCena(row.offers[0].price, currentUnit).toFixed(2);
+      el("ticketMarket").value = row.key;
+      el("ticketCurrency").value = row.currency;
+      el("ticketQuantity").value = "1.00";
+      el("ticketLimit").value = toDisplayPrice(row.offers[0].price, currentUnit).toFixed(2);
       updateSummary();
     }
 
     function reviewOrder() {
       const row = selectedTicketRow();
       const message =
-        "Kontrola pokynu\n\n" +
-        "Akce: " + (orderSide === "BUY" ? "NÁKUP / BID" : "PRODEJ / OFFER") + "\n" +
-        "Trh: " + row.market.metalName + ": " + row.market.location + " / " + row.currency + "\n" +
-        "Množství: " + el("ticketMnožství").value + " " + unitLabel() + "\n" +
-        "Limitní cena: " + el("ticketLimit").value + " " + row.currency + " / " + unitLabel() + "\n" +
-        "Typ pokynu: " + el("ticketType").value + "\n\n" +
-        "Produkční krok: přihlášení, kontrola zůstatku, AML/KYC, rizikové upozornění, druhé potvrzení, auditní stopa.";
+        "Order review\n\n" +
+        "Action: " + (orderSide === "BUY" ? "BUY / BID" : "SELL / OFFER") + "\n" +
+        "Market: " + row.market.metalName + ": " + row.market.location + " / " + row.currency + "\n" +
+        "Quantity: " + el("ticketQuantity").value + " " + unitLabel() + "\n" +
+        "Limit price: " + el("ticketLimit").value + " " + row.currency + " / " + unitLabel() + "\n" +
+        "Order type: " + el("ticketType").value + "\n\n" +
+        "Production step: login, balance check, AML/KYC, risk warning, second confirmation, audit log.";
       alert(message);
     }
 
-
-    async function loadAccountCards() {
-      const target = el('accountCards');
-      if (!target) return;
-      target.innerHTML = '<div class="account-card-backend"><h3>Načítám klientské karty…</h3></div>';
-      try {
-        const response = await fetch('/api/accounts/demo/cards', { cache: 'no-store' });
-        if (!response.ok) throw new Error('HTTP ' + response.status);
-        const payload = await response.json();
-        const cards = payload.cards || [];
-        target.innerHTML = cards.map(card => {
-          const rows = (card.rows || []).map(row => `
-            <div class="account-card-row"><span>${row.label}</span><strong>${row.value}</strong></div>
-          `).join('');
-          return `<section class="account-card-backend"><h3>${card.title}</h3>${rows}</section>`;
-        }).join('') || '<div class="account-card-backend"><h3>Žádné karty nejsou nastaveny.</h3></div>';
-      } catch (error) {
-        target.innerHTML = '<div class="account-card-backend"><h3>Karty se nepodařilo načíst</h3><div class="account-card-row"><span>Chyba</span><strong>' + error.message + '</strong></div></div>';
-      }
-    }
-
-    async function submitOrderToBackend() {
-      const row = selectedTicketRow();
-      const body = {
-        userId: 'demo',
-        side: orderSide,
-        marketKey: row.key,
-        metal: row.market.metal,
-        location: row.market.location,
-        currency: el('ticketCurrency').value || row.currency,
-        quantity: Number(el('ticketQuantity').value || 0),
-        unit: currentUnit,
-        limitPrice: Number(el('ticketLimit').value || 0),
-        orderType: el('ticketType').value,
-        status: 'pending'
-      };
-      const response = await fetch('/api/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
-      if (!response.ok) throw new Error('HTTP ' + response.status);
-      return response.json();
-    }
-
     function attachEvents() {
-      el("refreshCenas").addEventListener("click", loadLiveCenas);
+      el("refreshPrices").addEventListener("click", loadLivePrices);
       el("unitSelect").addEventListener("change", renderAll);
       el("minOrder").addEventListener("input", renderAll);
       el("currencyFilter").addEventListener("change", renderAll);
       el("metalFilter").addEventListener("change", renderAll);
 
       el("viewOrderBoard").addEventListener("click", () => setView("board"));
-      el("viewHloubka").addEventListener("click", () => setView("depth"));
-      el("viewSpready").addEventListener("click", () => setView("spreads"));
+      el("viewDepth").addEventListener("click", () => setView("depth"));
+      el("viewSpreads").addEventListener("click", () => setView("spreads"));
 
-      el("sideKoupit").addEventListener("click", () => setSide("BUY"));
-      el("sideProdat").addEventListener("click", () => setSide("SELL"));
-      el("ticketTrh").addEventListener("change", syncMěnaFromTrh);
-      el("ticketMěna").addEventListener("change", updateSummary);
-      el("ticketMnožství").addEventListener("input", updateSummary);
+      el("sideBuy").addEventListener("click", () => setSide("BUY"));
+      el("sideSell").addEventListener("click", () => setSide("SELL"));
+      el("ticketMarket").addEventListener("change", syncCurrencyFromMarket);
+      el("ticketCurrency").addEventListener("change", updateSummary);
+      el("ticketQuantity").addEventListener("input", updateSummary);
       el("ticketLimit").addEventListener("input", updateSummary);
       el("resetTicket").addEventListener("click", resetTicket);
-      el("submitTicket").addEventListener("click", async () => {
-        try {
-          const result = await submitOrderToBackend();
-          alert("Pokyn byl uložen do backendu.\n\nID: " + result.order.id + "\nStav: " + result.order.status);
-        } catch (error) {
-          console.warn("Backend pro pokyny není dostupný, zobrazím pouze lokální kontrolu.", error);
-          reviewOrder();
-        }
-      });
+      el("submitTicket").addEventListener("click", reviewOrder);
 
       el("openHelp").addEventListener("click", () => openModal("helpModal"));
       el("closeHelp").addEventListener("click", () => closeModal("helpModal"));
       el("closeHelp2").addEventListener("click", () => closeModal("helpModal"));
 
-      el("editTrhs").addEventListener("click", () => {
-        renderTrhCheckboxes();
+      el("editMarkets").addEventListener("click", () => {
+        renderMarketCheckboxes();
         openModal("marketsModal");
       });
-      el("closeTrhs").addEventListener("click", () => closeModal("marketsModal"));
-      el("selectAllTrhs").addEventListener("click", () => {
+      el("closeMarkets").addEventListener("click", () => closeModal("marketsModal"));
+      el("selectAllMarkets").addEventListener("click", () => {
         document.querySelectorAll("#marketCheckboxes input").forEach(chk => chk.checked = true);
       });
-      el("clearAllTrhs").addEventListener("click", () => {
+      el("clearAllMarkets").addEventListener("click", () => {
         document.querySelectorAll("#marketCheckboxes input").forEach(chk => chk.checked = false);
       });
-      el("applyTrhs").addEventListener("click", () => {
-        selectedTrhs.clear();
-        document.querySelectorAll("#marketCheckboxes input:checked").forEach(chk => selectedTrhs.add(chk.dataset.key));
+      el("applyMarkets").addEventListener("click", () => {
+        selectedMarkets.clear();
+        document.querySelectorAll("#marketCheckboxes input:checked").forEach(chk => selectedMarkets.add(chk.dataset.key));
         closeModal("marketsModal");
         renderAll();
       });
 
-      ["helpModal", "marketsModal", "accountModal", "depositModal", "statementModal", "openÚčetModal", "chartModal"].forEach(id => {
+      ["helpModal", "marketsModal", "accountModal", "depositModal", "statementModal", "openAccountModal"].forEach(id => {
         const modal = el(id);
         if (!modal) return;
         modal.addEventListener("click", (ev) => {
@@ -2655,34 +2376,34 @@
         link.addEventListener("click", (ev) => {
           ev.preventDefault();
           const action = link.dataset.action;
-          if (action === "account") { openModal("accountModal"); loadAccountCards(); }
+          if (action === "account") openModal("accountModal");
           if (action === "deposit") openModal("depositModal");
           if (action === "statement") openModal("statementModal");
           if (action === "help") openModal("helpModal");
-          if (action === "open-account") openModal("openÚčetModal");
+          if (action === "open-account") openModal("openAccountModal");
         });
       });
 
       const depositPreview = el("depositPreview");
       if (depositPreview) {
         depositPreview.addEventListener("click", () => {
-          const currency = el("depositMěna").value;
+          const currency = el("depositCurrency").value;
           const amount = el("depositAmount").value || "0.00";
-          alert("Payment instruction preview\\n\\nČástka: " + amount + " " + currency + "\\nReference: generated-by-backend\\n\\nV produkci zde vytvořit platební instrukci na serveru.");
+          alert("Payment instruction preview\\n\\nAmount: " + amount + " " + currency + "\\nReference: generated-by-backend\\n\\nV produkci zde vytvořit platební instrukci na serveru.");
         });
       }
 
       const registerPreview = el("registerPreview");
       if (registerPreview) {
         registerPreview.addEventListener("click", () => {
-          alert("Náhled registrace\\n\\nV produkci zde založte účet, ověřte e-mail, zobrazte VOP a spusťte KYC/AML workflow.");
+          alert("Registration preview\\n\\nV produkci zde založit účet, ověřit e-mail, zobrazit VOP a spustit KYC/AML flow.");
         });
       }
 
-      const exportVýpis = el("exportVýpis");
-      if (exportVýpis) {
-        exportVýpis.addEventListener("click", () => {
-          const csv = "Date,Operation,Asset,Amount,Status\\nToday,Order preview,Zlato,,Draft\\nToday,Live price refresh,Trh data,,OK\\n";
+      const exportStatement = el("exportStatement");
+      if (exportStatement) {
+        exportStatement.addEventListener("click", () => {
+          const csv = "Date,Operation,Asset,Amount,Status\\nToday,Order preview,Gold,,Draft\\nToday,Live price refresh,Market data,,OK\\n";
           const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
@@ -2695,16 +2416,16 @@
     }
 
     function init() {
-      initSelectedTrhs();
+      initSelectedMarkets();
       attachEvents();
       renderAll();
       resetTicket();
-      loadLiveCenas();
-      setInterval(loadLiveCenas, CONFIG.refreshIntervalMs);
+      loadLivePrices();
+      setInterval(loadLivePrices, CONFIG.refreshIntervalMs);
     }
 
     init();
   </script>
 
 
-</body></html>
+<script>console.info("NO_POSTGRES_SAFE_BUILD: data v /app/data/swiss-live-desk.json");</script></body></html>
