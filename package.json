@@ -9,6 +9,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
+    "db:migrate": "node scripts/migrate.js",
+    "db:check": "node scripts/check-db.js",
     "seed": "node scripts/seed.js"
   },
   "dependencies": {

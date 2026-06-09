@@ -84,3 +84,33 @@ Tento backend je použitelný jako základ, ale pro ostrý provoz doplň:
 - rate limiting,
 - zálohování databáze,
 - testy.
+
+
+## PostgreSQL — důležité
+
+Tento repozitář **neobsahuje běžící PostgreSQL databázi**. Tu je potřeba přidat v Railway jako samostatnou službu:
+
+```text
++ New → Database → PostgreSQL
+```
+
+Potom v API službě nastavte:
+
+```text
+DATABASE_URL=${{Postgres.DATABASE_URL}}
+```
+
+Schéma databáze je v:
+
+```text
+sql/schema.sql
+```
+
+Migrační skripty:
+
+```bash
+npm run db:migrate
+npm run db:check
+```
+
+Podrobný postup je v `docs/POSTGRES_RAILWAY_SETUP_CZ.md`.
