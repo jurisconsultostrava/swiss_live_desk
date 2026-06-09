@@ -61,4 +61,76 @@ app.get('/api/orders',(req,res)=>{res.json({ok:true,orders:readDb().orders})});
 app.post('/api/orders',(req,res)=>{const body=req.body||{}; const order=withDb(db=>{const o={id:'O'+Date.now().toString().slice(-8),createdAt:now(),userId:body.userId||'demo',side:body.side||'BUY',status:body.status||'rozpracováno',marketKey:body.marketKey||null,market:body.market||null,currency:body.currency||'CZK',quantity:Number(body.quantity||0),unit:body.unit||'oz',price:Number(body.price||0),total:Number(body.total||0),raw:body}; db.orders.unshift(o); db.audit.unshift({time:now(),event:'order.created',detail:o.id}); return o}); res.status(201).json({ok:true,order})});
 app.post('/api/admin/reset-db',(req,res)=>{const token=req.headers['x-admin-token']; if(process.env.ADMIN_TOKEN&&token!==process.env.ADMIN_TOKEN) return res.status(403).json({ok:false,error:'Forbidden'}); const db=defaultDb(); writeDb(db); res.json({ok:true,reset:true})});
 app.get('*',(req,res)=>res.sendFile(path.join(__dirname,'public','index.html')));
+const fs = require('fs');
+const path = require('path');
+
+// Cesta k souboru, kam ti aplikace ukládá lidi (případně uprav podle hlášky v logu)
+const DATA_PATH = path.join(__dirname, 'app', 'data', 'swiss-live-desk.json');
+
+app.get('/admin', (req, res) => {
+    let users = [];
+    
+    // 1. Načteme data ze souboru
+    try {
+        if (fs.existsSync(DATA_PATH)) {
+            const fileContent = fs.readFileSync(DATA_PATH, 'utf8');
+            users = JSON.parse(fileContent);
+        }
+    } catch (error) {
+        return res.send("Chyba při čtení databáze klientů: " + error.message);
+    }
+
+    // 2. Vygenerujeme přímočaré HTML řádky pro tabulku
+    const rows = users.map(user => `
+        <tr>
+            <td style="font-weight:bold;">${user.name || user.regName || 'Nezadáno'}</td>
+            <td>${user.email || user.regEmail || '-'}</td>
+            <td>${user.country || user.regCountry || '-'}</td>
+            <td><span style="background:#fff7df; padding:3px 8px; border-radius:4px; font-weight:bold;">${user.status || 'Čeká na schválení'}</span></td>
+            <td>${user.regId1 ? `<a href="/uploads/${user.regId1}" target="_blank" style="color:#1e5b98; font-weight:bold;">Zobrazit OP ↗</a>` : 'Chybí'}</td>
+            <td>${user.regId2 ? `<a href="/uploads/${user.regId2}" target="_blank" style="color:#1e5b98; font-weight:bold;">Zobrazit Doklad 2 ↗</a>` : 'Chybí'}</td>
+        </tr>
+    `).join('');
+
+    // 3. Vyplivneme hotovou stránku do prohlížeče
+    res.send(`
+        <!DOCTYPE html>
+        <html lang="cs">
+        <head>
+            <meta charset="UTF-8">
+            <title>SAFE AML Kontrola Dokladů</title>
+            <style>
+                body { font-family: Arial, sans-serif; padding: 30px; background: #edf1f5; color: #1d2935; }
+                .container { max-width: 1100px; margin: 0 auto; background: white; padding: 24px; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+                h2 { color: #10253f; margin-top: 0; border-bottom: 2px solid #b78a33; padding-bottom: 10px; }
+                table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+                th, td { padding: 12px; border: 1px solid #d7e0ea; text-align: left; }
+                th { background: #10253f; color: white; font-size: 13px; text-transform: uppercase; }
+                tr:hover { background: #f7f9fb; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h2>Interní AML Systém – Kontrola dálkové identifikace klientů</h2>
+                <p>Zde vidíte data zapsaná do souboru <code>swiss-live-desk.json</code> pro ověření 2 dokladů a 1 Kč.</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Jméno / Firma</th>
+                            <th>E-mail</th>
+                            <th>Země</th>
+                            <th>Status účtu</th>
+                            <th>Hlavní doklad (OP)</th>
+                            <th>Druhý doklad</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rows || '<tr><td colspan="6" style="text-align:center; color:gray;">Zatím se nikdo nezaregistroval.</td></tr>'}
+                    </tbody>
+                </table>
+            </div>
+        </body>
+        </html>
+    `);
+});
 app.listen(PORT,()=>{const db=readDb(); console.log(`Swiss Live Desk NO POSTGRES SAFE BUILD listening on ${PORT}`); console.log(`DB file: ${DB_FILE}`); console.log('PostgreSQL: disabled'); console.log(`Users=${db.users.length}, cards=${db.accountCards.length}, orders=${db.orders.length}`);});
