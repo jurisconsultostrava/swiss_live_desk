@@ -1,42 +1,35 @@
-# Swiss Live Desk — NO POSTGRES SAFE BUILD
+# Swiss Live Desk – CZ NO POSTGRES + Admin Console
 
-Tahle verze úplně zahazuje PostgreSQL.
+Bez PostgreSQL. Data jsou v `DATA_DIR/swiss-live-desk.json`.
 
-## Railway
-Pouze jedna služba `swiss_live_desk`.
+## Spuštění
 
-Variables:
+```bash
+npm install
+npm start
+```
+
+## Railway Variables
 
 ```env
 NODE_ENV=production
 DATA_DIR=/app/data
+GOLDAPI_KEY=...
+GOLDAPI_PROVIDER=auto
+ADMIN_TOKEN=volitelny-token
 ```
 
-Smazat proměnné:
+## Endpointy
 
-```env
-DATABASE_URL
-PGHOST
-PGPASSWORD
-PGUSER
-PGDATABASE
-PGPORT
-```
+- `/` obchodní tabule
+- `/admin.html` admin konzole
+- `/api/health`
+- `/api/prices/latest`
+- `/api/admin/overview`
+- `/api/admin/users`
+- `/api/admin/orders`
+- `/api/admin/account-cards`
+- `/api/admin/settings`
+- `/api/admin/audit`
 
-## Health
-
-```text
-/api/health
-```
-
-má vrátit:
-
-```json
-{"ok":true,"db":true,"dbType":"embedded-json","postgres":false}
-```
-
-Data jsou v:
-
-```text
-/app/data/swiss-live-desk.json
-```
+Pokud nastavíš `ADMIN_TOKEN`, admin konzole ho musí posílat v hlavičce `x-admin-token`. V UI je pole `ADMIN_TOKEN`.

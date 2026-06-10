@@ -1,0 +1,118 @@
+{
+  "latestPrices": null,
+  "priceHistory": [],
+  "spreadHistory": [],
+  "orders": [
+    {
+      "id": "O-DEMO-1",
+      "createdAt": "2026-06-09T00:00:00.000Z",
+      "userName": "Demo klient",
+      "side": "Chci koupit",
+      "market": "Zlato: Curych",
+      "currency": "CZK",
+      "quantity": 10,
+      "price": 0,
+      "total": 0,
+      "status": "rozpracováno",
+      "note": "Demo objednávka bez ceny – cena se doplní po live feedu"
+    }
+  ],
+  "users": [
+    {
+      "id": "U1001",
+      "name": "Demo klient",
+      "email": "client@demo.local",
+      "role": "client",
+      "kyc": "verified",
+      "status": "active",
+      "cashCZK": 750000,
+      "cashEUR": 0,
+      "cashCHF": 0,
+      "cashUSD": 0,
+      "auG": 120.5,
+      "agG": 0,
+      "ptG": 0,
+      "pdG": 0
+    },
+    {
+      "id": "U1002",
+      "name": "Klient čeká na KYC",
+      "email": "kyc@demo.local",
+      "role": "client",
+      "kyc": "pending",
+      "status": "watch",
+      "cashCZK": 150000,
+      "cashEUR": 0,
+      "cashCHF": 0,
+      "cashUSD": 0,
+      "auG": 0,
+      "agG": 0,
+      "ptG": 0,
+      "pdG": 0
+    },
+    {
+      "id": "U1003",
+      "name": "Dealer",
+      "email": "dealer@demo.local",
+      "role": "dealer",
+      "kyc": "verified",
+      "status": "active",
+      "cashCZK": 0,
+      "cashEUR": 0,
+      "cashCHF": 0,
+      "cashUSD": 0,
+      "auG": 0,
+      "agG": 0,
+      "ptG": 0,
+      "pdG": 0
+    }
+  ],
+  "accountCards": [
+    {
+      "id": "summary",
+      "title": "Souhrn účtu",
+      "kind": "summary",
+      "order": 1,
+      "enabled": true,
+      "description": "Celkový přehled klientského účtu"
+    },
+    {
+      "id": "cash",
+      "title": "Peněžní zůstatky",
+      "kind": "cash",
+      "order": 2,
+      "enabled": true,
+      "description": "CZK / EUR / CHF / USD zůstatky"
+    },
+    {
+      "id": "metals",
+      "title": "Kovové zůstatky",
+      "kind": "metals",
+      "order": 3,
+      "enabled": true,
+      "description": "Au / Ag / Pt / Pd v evidenci"
+    },
+    {
+      "id": "orders",
+      "title": "Pokyny a objednávky",
+      "kind": "orders",
+      "order": 4,
+      "enabled": true,
+      "description": "Rozpracované, čekající a schválené pokyny"
+    },
+    {
+      "id": "kyc",
+      "title": "KYC / AML",
+      "kind": "compliance",
+      "order": 5,
+      "enabled": true,
+      "description": "Ověření klienta a limity"
+    }
+  ],
+  "settings": {
+    "commissionReserveBps": 100,
+    "defaultSettlement": "client-ledger",
+    "allowOrdersWithoutKyc": false
+  },
+  "audit": []
+}
