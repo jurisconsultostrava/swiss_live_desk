@@ -73,3 +73,18 @@ npm run dev
 - `metal_price_snapshots`
 - `market_spread_snapshots`
 - `audit_log`
+
+## 6. Pokud vznikne `ENOTFOUND postgres.railway.internal`
+
+Použijte dočasně veřejný DB URL reference:
+
+```text
+DATABASE_URL=${{Postgres.DATABASE_PUBLIC_URL}}
+DB_REQUIRED=false
+```
+
+Tím se deployment odblokuje. Detailní postup je v:
+
+```text
+docs/RAILWAY_ENOTFOUND_FIX_CZ.md
+```

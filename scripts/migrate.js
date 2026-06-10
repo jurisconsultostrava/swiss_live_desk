@@ -1,16 +1,19 @@
 const { Pool } = require('pg');
+const { pickDatabaseUrl, shouldUseSsl } = require('./db-url');
 const fs = require('fs');
 const path = require('path');
 
 async function main() {
-  if (!process.env.DATABASE_URL) {
-    console.error('DATABASE_URL není nastaven. Na Railway přidejte PostgreSQL a nastavte DATABASE_URL=${{Postgres.DATABASE_URL}}.');
+  const databaseUrl = pickDatabaseUrl();
+  if (!databaseUrl) {
+    console.error('Není nastavena žádná PostgreSQL URL. Nastavte DATABASE_URL nebo DATABASE_PUBLIC_URL.');
     process.exit(1);
   }
 
   const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: process.env.DATABASE_URL.includes('railway') ? { rejectUnauthorized: false } : undefined
+    connectionString: databaseUrl,
+    ssl: shouldUseSsl(databaseUrl),
+    connectionTimeoutMillis: Number(process.env.PG_CONNECTION_TIMEOUT_MS || 8000)
   });
 
   const schemaPath = path.join(__dirname, '..', 'sql', 'schema.sql');

@@ -1,35 +1,140 @@
-# Swiss Live Desk – CZ NO POSTGRES + Admin Console
+# Swiss Gold Market Board — Railway + GitHub
 
-Bez PostgreSQL. Data jsou v `DATA_DIR/swiss-live-desk.json`.
+Plná verze pro nasazení na Railway z GitHub repozitáře.
 
-## Spuštění
+## Obsah
+
+- český frontend `public/index.html`
+- animovaný market tape ticker
+- graf spot ceny
+- historie spreadu
+- backend API v Expressu
+- PostgreSQL model pro:
+  - historii cen,
+  - historii spreadů,
+  - klientské účty,
+  - klientské karty účtu,
+  - kovové zůstatky,
+  - peněžní zůstatky,
+  - objednávky/pokyny,
+  - audit log.
+
+## Lokální spuštění
 
 ```bash
 npm install
-npm start
+cp .env.example .env
+npm run dev
 ```
 
-## Railway Variables
+Bez `DATABASE_URL` poběží API v omezeném režimu s demo daty. Pro plný model použij PostgreSQL.
 
-```env
+## Railway deployment
+
+1. Vytvoř GitHub repo a nahraj celý obsah tohoto balíčku.
+2. V Railway založ nový projekt.
+3. Vyber **Deploy from GitHub repo**.
+4. Přidej PostgreSQL service.
+5. Na web service nastav proměnné:
+
+```text
 NODE_ENV=production
-DATA_DIR=/app/data
+DATABASE_URL=${{Postgres.DATABASE_URL}}
 GOLDAPI_KEY=...
-GOLDAPI_PROVIDER=auto
-ADMIN_TOKEN=volitelny-token
+ADMIN_TOKEN=...
 ```
 
-## Endpointy
+Railway nastavuje `PORT` automaticky.
 
-- `/` obchodní tabule
-- `/admin.html` admin konzole
-- `/api/health`
-- `/api/prices/latest`
-- `/api/admin/overview`
-- `/api/admin/users`
-- `/api/admin/orders`
-- `/api/admin/account-cards`
-- `/api/admin/settings`
-- `/api/admin/audit`
+## API
 
-Pokud nastavíš `ADMIN_TOKEN`, admin konzole ho musí posílat v hlavičce `x-admin-token`. V UI je pole `ADMIN_TOKEN`.
+### Ceny
+
+```http
+GET /api/prices/latest
+GET /api/prices/history?metal=AU&currency=CZK&days=30
+GET /api/spreads/history?marketKey=AUXZU_CZK&days=30
+POST /api/admin/refresh-prices
+```
+
+### Klientský účet
+
+```http
+GET /api/accounts/demo/cards
+```
+
+### Pokyny
+
+```http
+GET /api/orders
+POST /api/orders
+PATCH /api/orders/:id/status
+```
+
+## Produkční poznámka
+
+Tento backend je použitelný jako základ, ale pro ostrý provoz doplň:
+
+- skutečné přihlášení,
+- RBAC,
+- AML/KYC workflow,
+- server-side validaci zůstatků,
+- blokaci prostředků/kovu při zadání pokynu,
+- auditní stopu pro změny pricingu,
+- rate limiting,
+- zálohování databáze,
+- testy.
+
+
+## PostgreSQL — důležité
+
+Tento repozitář **neobsahuje běžící PostgreSQL databázi**. Tu je potřeba přidat v Railway jako samostatnou službu:
+
+```text
++ New → Database → PostgreSQL
+```
+
+Potom v API službě nastavte:
+
+```text
+DATABASE_URL=${{Postgres.DATABASE_URL}}
+```
+
+Schéma databáze je v:
+
+```text
+sql/schema.sql
+```
+
+Migrační skripty:
+
+```bash
+npm run db:migrate
+npm run db:check
+```
+
+Podrobný postup je v `docs/POSTGRES_RAILWAY_SETUP_CZ.md`.
+
+## Railway ENOTFOUND fix
+
+Pokud log obsahuje:
+
+```text
+getaddrinfo ENOTFOUND postgres.railway.internal
+```
+
+nejrychlejší oprava v Railway API service → Variables:
+
+```text
+DATABASE_URL=${{Postgres.DATABASE_PUBLIC_URL}}
+DB_REQUIRED=false
+```
+
+Pak redeploy.
+
+Podrobný postup: `docs/RAILWAY_ENOTFOUND_FIX_CZ.md`.
+
+
+## Retail terminologie
+
+Viditelné texty frontendu používají retailově srozumitelné pojmy: `Výkupní cena (Poptávka)`, `Prodejní cena (Nabídka)`, `Chci koupit`, `Chci prodat`. Slovník je v `docs/TERMINOLOGIE_RETAIL_CZ.md`.

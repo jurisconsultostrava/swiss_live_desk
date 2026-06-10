@@ -1,24 +1,57 @@
-
 const express = require('express');
-const helmet = require('helmet');
-const compression = require('compression');
 const cors = require('cors');
-const fs = require('fs');
 const path = require('path');
+const fs = require('fs');
+const { Pool } = require('pg');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
-const DB_FILE = path.join(DATA_DIR, 'swiss-live-desk.json');
+function pickDatabaseUrl() {
+  // Railway can expose several DB URL variables depending on service/template/version.
+  // Prefer explicit DATABASE_URL; if it is absent, fall back to public/private variants.
+  return process.env.DATABASE_URL
+    || process.env.DATABASE_PUBLIC_URL
+    || process.env.POSTGRES_URL
+    || process.env.POSTGRES_PUBLIC_URL
+    || process.env.DATABASE_PRIVATE_URL
+    || process.env.POSTGRES_PRIVATE_URL
+    || '';
+}
 
-const METAL_MAP = { XAU: 'AU', XAG: 'AG', XPT: 'PT', XPD: 'PD' };
-const METAL_CODES = { AU: 'XAU', AG: 'XAG', PT: 'XPT', PD: 'XPD' };
-const EMPTY_PRICES = {
-  AU: { USD:null, EUR:null, CZK:null, CHF:null },
-  AG: { USD:null, EUR:null, CZK:null, CHF:null },
-  PT: { USD:null, EUR:null, CZK:null, CHF:null },
-  PD: { USD:null, EUR:null, CZK:null, CHF:null }
+const DATABASE_URL = pickDatabaseUrl();
+const DB_REQUIRED = String(process.env.DB_REQUIRED || 'false').toLowerCase() === 'true';
+const GOLDAPI_KEY = process.env.GOLDAPI_KEY;
+const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'change-me';
+let dbReady = false;
+let dbInitError = null;
+
+function shouldUseSsl(connectionString) {
+  if (!connectionString) return undefined;
+  if (connectionString.includes('localhost') || connectionString.includes('127.0.0.1')) return undefined;
+  if (connectionString.includes('sslmode=disable')) return undefined;
+  return { rejectUnauthorized: false };
+}
+
+const pool = DATABASE_URL ? new Pool({
+  connectionString: DATABASE_URL,
+  ssl: shouldUseSsl(DATABASE_URL),
+  // Railway occasionally resolves private hosts only after the service is fully attached.
+  // Keep connection attempts short so the HTTP service can still boot in degraded mode.
+  connectionTimeoutMillis: Number(process.env.PG_CONNECTION_TIMEOUT_MS || 8000)
+}) : null;
+
+app.use(cors());
+app.use(express.json({ limit: '1mb' }));
+app.use(express.static(path.join(__dirname, 'public')));
+
+const DEMO_PRICES = {
+  AU: { USD: 4325.10, EUR: 4018.80, CHF: 3775.40, CZK: 98120.00 },
+  AG: { USD: 58.20, EUR: 54.15, CHF: 50.82, CZK: 1320.00 },
+  PT: { USD: 1680.00, EUR: 1561.00, CHF: 1467.50, CZK: 38120.00 },
+  PD: { USD: 1620.00, EUR: 1505.30, CHF: 1412.00, CZK: 36780.00 }
 };
+const SYMBOLS = { AU: 'XAU', AG: 'XAG', PT: 'XPT', PD: 'XPD' };
+const CURRENCIES = ['USD','EUR','CHF','CZK'];
 const MARKETS = [
   { key:'AUXZU', metal:'AU', location:'Curych', currencies:['USD','EUR','CHF','CZK'] },
   { key:'AUXLN', metal:'AU', location:'Londýn', currencies:['USD','EUR','CHF'] },
@@ -30,307 +63,347 @@ const MARKETS = [
   { key:'PDXLN', metal:'PD', location:'Londýn', currencies:['USD','EUR'] }
 ];
 const SPREAD_BPS = { AU:55, AG:180, PT:120, PD:160 };
-const PREMIUM_BPS = { Praha:35, Curych:10, Londýn:15, Frankfurt:20 };
+const LOCATION_BPS = { Praha:35, Curych:10, Londýn:15, Frankfurt:20 };
 
-app.use(helmet({ contentSecurityPolicy:false }));
-app.use(cors());
-app.use(compression());
-app.use(express.json({limit:'1mb'}));
-app.use(express.static(path.join(__dirname, 'public')));
+function requireDb() {
+  if (!pool) {
+    const err = new Error('DATABASE_URL není nastaven. Na Railway přidejte PostgreSQL service nebo proměnnou DATABASE_PUBLIC_URL.');
+    err.status = 503;
+    throw err;
+  }
+  if (!dbReady) {
+    const reason = dbInitError ? dbInitError.message : 'databáze zatím není připravena';
+    const err = new Error('Databáze není dostupná: ' + reason);
+    err.status = 503;
+    throw err;
+  }
+  return pool;
+}
 
-function now(){ return new Date().toISOString(); }
-function ensureDataFile(){
-  fs.mkdirSync(DATA_DIR, { recursive:true });
-  if(!fs.existsSync(DB_FILE)) fs.writeFileSync(DB_FILE, JSON.stringify({latestPrices:null,priceHistory:[],spreadHistory:[],orders:[],users:[],accountCards:[],audit:[]}, null, 2));
+async function q(sql, params = []) {
+  return requireDb().query(sql, params);
 }
-function readDb(){ ensureDataFile(); return JSON.parse(fs.readFileSync(DB_FILE,'utf8')); }
-function writeDb(db){ ensureDataFile(); fs.writeFileSync(DB_FILE, JSON.stringify(db,null,2)); }
-function listEnv(name, fallback){ return String(process.env[name] || fallback).split(',').map(x=>x.trim().toUpperCase()).filter(Boolean); }
-function cacheFresh(db){
-  const ttl = Number(process.env.PRICE_CACHE_TTL_MS || 300000);
-  if(!db.latestPrices || !db.latestPrices.timestamp || !db.latestPrices.prices) return false;
-  return (Date.now() - new Date(db.latestPrices.timestamp).getTime()) < ttl;
+
+async function ensureSchema() {
+  if (!pool) {
+    dbReady = false;
+    dbInitError = new Error('DATABASE_URL chybí');
+    return;
+  }
+  const schema = fs.readFileSync(path.join(__dirname, 'sql', 'schema.sql'), 'utf8');
+  await pool.query('select 1 as ok');
+  await pool.query(schema);
+  await seedDemoData();
+  dbReady = true;
+  dbInitError = null;
 }
-function timeoutSignal(ms){ const controller=new AbortController(); const timer=setTimeout(()=>controller.abort(),ms); return {signal:controller.signal, clear:()=>clearTimeout(timer)}; }
-async function fetchJson(url, options={}, ms=12000){
-  const t=timeoutSignal(ms);
-  try{
-    const response=await fetch(url,{...options, signal:t.signal});
-    const raw=await response.text();
-    let payload=null;
-    try{ payload=raw?JSON.parse(raw):null; }catch{ payload={raw:raw.slice(0,500)}; }
-    return {response,payload};
-  } finally { t.clear(); }
+
+async function seedDemoData() {
+  if (!pool) return;
+  const userRes = await pool.query(`
+    insert into app_users(external_ref, email, username, full_name, role, kyc_status)
+    values ('demo', 'client@demo.local', 'DEMOUSER', 'Demo klient', 'client', 'verified')
+    on conflict (external_ref) do update set updated_at = now()
+    returning id
+  `);
+  const userId = userRes.rows[0].id;
+  await pool.query(`
+    insert into account_settings(user_id, valuation_currency, timezone, language)
+    values ($1,'CZK','Europe/Prague','cs')
+    on conflict (user_id) do nothing
+  `, [userId]);
+  const cash = [['CZK',750000],['EUR',5000],['USD',1200],['CHF',800]];
+  for (const [currency, amount] of cash) {
+    await pool.query(`insert into client_cash_balances(user_id,currency,available) values($1,$2,$3) on conflict(user_id,currency) do nothing`, [userId,currency,amount]);
+  }
+  const holdings = [['AU','Curych',120.5],['AG','Curych',2500],['PT','Londýn',24.2],['PD','Londýn',10.1]];
+  for (const [metal, location, grams] of holdings) {
+    await pool.query(`insert into client_metal_holdings(user_id,metal,location,total_g) values($1,$2,$3,$4) on conflict(user_id,metal,location) do nothing`, [userId,metal,location,grams]);
+  }
+  const cards = [
+    ['summary','summary','Souhrn účtu',10],
+    ['bullion_au','holding','Zlato',20],
+    ['bullion_ag','holding','Stříbro',30],
+    ['bullion_pt','holding','Platina',40],
+    ['bullion_pd','holding','Palladium',50],
+    ['currency','cash','Měnové zůstatky',60],
+    ['trading_options','settings','Obchodní možnosti',70],
+    ['security_options','settings','Bezpečnostní nastavení',80],
+    ['communication_preferences','settings','Komunikační preference',90],
+    ['auto_invest','settings','Auto-Invest',100]
+  ];
+  for (const [key,type,title,sort] of cards) {
+    await pool.query(`insert into account_cards(user_id,card_key,card_type,title_cs,sort_order) values($1,$2,$3,$4,$5) on conflict(user_id,card_key) do nothing`, [userId,key,type,title,sort]);
+  }
 }
-async function fetchGoldApiNet(symbol,currency,key){
-  const base=(process.env.GOLDAPI_NET_BASE_URL || 'https://app.goldapi.net').replace(/\/$/,'');
-  const url=`${base}/price/${symbol}/${currency}?x-api-key=${encodeURIComponent(key)}`;
-  const {response,payload}=await fetchJson(url,{headers:{Accept:'application/json'}});
-  if(!response.ok) throw new Error(`goldapi.net ${symbol}/${currency}: HTTP ${response.status} ${payload?.error || payload?.message || payload?.raw || ''}`.trim());
-  const price=Number(payload?.price ?? payload?.ask ?? payload?.bid);
-  if(!Number.isFinite(price) || price<=0) throw new Error(`goldapi.net ${symbol}/${currency}: neplatná odpověď`);
-  return {price, provider:'goldapi.net', payload};
+
+async function fetchLivePrices() {
+  if (!GOLDAPI_KEY) return { mode:'demo', prices:DEMO_PRICES, warning:'GOLDAPI_KEY chybí' };
+  const prices = {};
+  try {
+    for (const [metal, symbol] of Object.entries(SYMBOLS)) {
+      prices[metal] = {};
+      for (const currency of CURRENCIES) {
+        const res = await fetch(`https://www.goldapi.io/api/${symbol}/${currency}`, { headers: { 'x-access-token': GOLDAPI_KEY, 'Content-Type':'application/json' } });
+        if (!res.ok) throw new Error(`${symbol}/${currency}: HTTP ${res.status}`);
+        const data = await res.json();
+        const value = Number(data.price);
+        if (!Number.isFinite(value) || value <= 0) throw new Error(`${symbol}/${currency}: neplatná cena`);
+        prices[metal][currency] = value;
+      }
+    }
+    return { mode:'live', prices };
+  } catch (error) {
+    return { mode:'demo', prices:DEMO_PRICES, warning:error.message };
+  }
 }
-async function fetchGoldApiIo(symbol,currency,key){
-  const base=(process.env.GOLDAPI_IO_BASE_URL || 'https://www.goldapi.io').replace(/\/$/,'');
-  const url=`${base}/api/${symbol}/${currency}`;
-  const {response,payload}=await fetchJson(url,{headers:{'x-access-token':key, 'Content-Type':'application/json', Accept:'application/json'}});
-  if(!response.ok) throw new Error(`goldapi.io ${symbol}/${currency}: HTTP ${response.status} ${payload?.error || payload?.message || payload?.raw || ''}`.trim());
-  const price=Number(payload?.price ?? payload?.ask ?? payload?.bid);
-  if(!Number.isFinite(price) || price<=0) throw new Error(`goldapi.io ${symbol}/${currency}: neplatná odpověď`);
-  return {price, provider:'goldapi.io', payload};
+
+function deterministicFactor(str) {
+  let h = 0; for (let i=0;i<str.length;i++) h = (h * 31 + str.charCodeAt(i)) % 997;
+  return (h % 50) / 100;
 }
-async function fetchMetal(symbol,currency,key){
-  const provider=String(process.env.GOLDAPI_PROVIDER || 'auto').toLowerCase();
-  if(provider==='net') return fetchGoldApiNet(symbol,currency,key);
-  if(provider==='io') return fetchGoldApiIo(symbol,currency,key);
-  const errors=[];
-  try { return await fetchGoldApiNet(symbol,currency,key); } catch(e){ errors.push(e.message); }
-  try { return await fetchGoldApiIo(symbol,currency,key); } catch(e){ errors.push(e.message); }
-  throw new Error(errors.join(' | '));
-}
-function calcSpreads(prices, timestamp){
-  const rows=[];
-  for(const m of MARKETS){
-    for(const c of m.currencies){
-      const spot=Number(prices?.[m.metal]?.[c]);
-      if(!Number.isFinite(spot) || spot<=0) continue;
-      const adjusted=spot*(1+(PREMIUM_BPS[m.location]||0)/10000);
-      const spread=(SPREAD_BPS[m.metal]||100)/10000;
-      const bid=adjusted*(1-spread/2);
-      const offer=adjusted*(1+spread/2);
-      rows.push({time:timestamp, marketKey:`${m.key}_${c}`, metal:m.metal, location:m.location, currency:c, spotToz:spot, bidToz:bid, offerToz:offer, spreadPct:((offer-bid)/bid)*100});
+
+function buildMarketSnapshots(prices, capturedAt = new Date()) {
+  const rows = [];
+  for (const market of MARKETS) {
+    for (const currency of market.currencies) {
+      const spot = Number(prices[market.metal]?.[currency] || DEMO_PRICES[market.metal][currency]);
+      const spread = (SPREAD_BPS[market.metal] || 100) / 10000;
+      const loc = (LOCATION_BPS[market.location] || 0) / 10000;
+      const adjusted = spot * (1 + loc);
+      const bid = adjusted * (1 - spread / 2);
+      const offer = adjusted * (1 + spread / 2);
+      const liquidityBase = { AU:82, AG:2400, PT:52, PD:38 }[market.metal] || 100;
+      const bidQty = liquidityBase * (0.5 + deterministicFactor(market.key + currency));
+      const offerQty = liquidityBase * (0.44 + deterministicFactor(currency + market.key));
+      rows.push({
+        marketKey: `${market.key}_${currency}`,
+        metal: market.metal,
+        location: market.location,
+        currency,
+        spotToz: spot,
+        bestBidToz: bid,
+        bestOfferToz: offer,
+        spreadAbs: offer - bid,
+        spreadPct: ((offer - bid) / bid) * 100,
+        bidQuantityToz: bidQty,
+        offerQuantityToz: offerQty,
+        capturedAt
+      });
     }
   }
   return rows;
 }
-async function refreshPrices({force=false}={}){
-  const db=readDb();
-  if(!force && cacheFresh(db)) return {...db.latestPrices, source:'cache'};
-  const key=process.env.GOLDAPI_KEY;
-  if(!key) throw new Error('GOLDAPI_KEY není nastavený v Railway Variables.');
-  const symbols=listEnv('GOLDAPI_METALS','XAU,XAG,XPT,XPD').filter(s=>METAL_MAP[s]);
-  const currencies=listEnv('GOLDAPI_CURRENCIES','USD,EUR,CZK,CHF');
-  const prices=JSON.parse(JSON.stringify(EMPTY_PRICES));
-  const ok=[]; const errors=[];
-  for(const symbol of symbols){
-    const metal=METAL_MAP[symbol];
-    for(const cur of currencies){
-      try{
-        const r=await fetchMetal(symbol,cur,key);
-        prices[metal][cur]=r.price;
-        ok.push(`${symbol}/${cur}:${r.provider}`);
-      }catch(e){ errors.push(`${symbol}/${cur}: ${e.message}`); }
+
+async function persistPrices(payload) {
+  if (!pool || !dbReady) return;
+  const capturedAt = new Date();
+  const client = await pool.connect();
+  try {
+    await client.query('begin');
+    for (const metal of Object.keys(payload.prices)) {
+      for (const currency of Object.keys(payload.prices[metal])) {
+        await client.query(`insert into metal_price_snapshots(metal,currency,price_toz,source,captured_at) values($1,$2,$3,$4,$5)`, [metal,currency,payload.prices[metal][currency],payload.mode,capturedAt]);
+      }
     }
+    for (const row of buildMarketSnapshots(payload.prices, capturedAt)) {
+      await client.query(`insert into market_spread_snapshots(market_key,metal,location,currency,spot_toz,best_bid_toz,best_offer_toz,spread_abs,spread_pct,bid_quantity_toz,offer_quantity_toz,captured_at)
+        values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`, [row.marketKey,row.metal,row.location,row.currency,row.spotToz,row.bestBidToz,row.bestOfferToz,row.spreadAbs,row.spreadPct,row.bidQuantityToz,row.offerQuantityToz,row.capturedAt]);
+    }
+    await client.query('commit');
+  } catch (e) { await client.query('rollback'); throw e; } finally { client.release(); }
+}
+
+function generateSyntheticPriceHistory(metal, currency, days = 30) {
+  const base = DEMO_PRICES[metal]?.[currency] || 100;
+  const out = [];
+  const now = Date.now();
+  for (let i = days - 1; i >= 0; i--) {
+    const ts = new Date(now - i * 86400000);
+    const drift = (days - i) * 0.001;
+    const noise = (Math.sin(i * 1.91 + base) * 0.018);
+    out.push({ capturedAt: ts.toISOString(), priceToz: Number((base * (1 + drift + noise)).toFixed(6)), source:'synthetic' });
   }
-  if(!ok.length) throw new Error(errors.join(' || ') || 'GoldAPI nevrátilo žádnou platnou cenu.');
-  const timestamp=now();
-  db.latestPrices={mode:errors.length?'partial-live':'live', timestamp, prices, ok, warning:errors.length?errors.slice(0,20).join(' || '):null};
-  for(const metal of Object.keys(prices)) for(const cur of Object.keys(prices[metal])){
-    const price=Number(prices[metal][cur]);
-    if(Number.isFinite(price) && price>0) db.priceHistory.push({time:timestamp, metal, currency:cur, priceToz:price});
+  return out;
+}
+
+function generateSyntheticSpreadHistory(marketKey, days = 30) {
+  const out = [];
+  const now = Date.now();
+  const base = marketKey.includes('AG') ? 1.8 : marketKey.includes('PT') || marketKey.includes('PD') ? 1.25 : 0.55;
+  for (let i = days - 1; i >= 0; i--) {
+    const ts = new Date(now - i * 86400000);
+    const value = Math.max(0.05, base + Math.sin(i * 1.37 + marketKey.length) * 0.16);
+    out.push({ capturedAt: ts.toISOString(), spreadPct: Number(value.toFixed(6)), source:'synthetic' });
   }
-  db.spreadHistory.push(...calcSpreads(prices,timestamp));
-  db.priceHistory=db.priceHistory.slice(-20000);
-  db.spreadHistory=db.spreadHistory.slice(-20000);
-  writeDb(db);
-  return db.latestPrices;
+  return out;
 }
 
-app.get('/api/health',(req,res)=>{
-  const db=readDb();
-  res.json({ok:true, db:true, dbType:'embedded-json', postgres:false, hardcodedPrices:false, file:DB_FILE, latestMode:db.latestPrices?.mode || null, time:now()});
+app.get('/api/health', async (_req, res) => res.json({ ok:true, dbConfigured:Boolean(pool), dbReady, dbError: dbInitError ? dbInitError.message : null, time:new Date().toISOString() }));
+
+app.get('/api/prices/latest', async (_req, res, next) => {
+  try {
+    const payload = await fetchLivePrices();
+    await persistPrices(payload);
+    res.json({ mode: payload.mode, timestamp: new Date().toISOString(), prices: payload.prices, warning: payload.warning });
+  } catch (error) { next(error); }
 });
-app.get('/api/debug/goldapi', async (req,res)=>{
-  const key=process.env.GOLDAPI_KEY;
-  const symbol=String(req.query.symbol || 'XAU').toUpperCase();
-  const currency=String(req.query.currency || 'USD').toUpperCase();
-  if(!key) return res.status(400).json({ok:false, hasKey:false, error:'GOLDAPI_KEY není nastavený.'});
-  try{ const r=await fetchMetal(symbol,currency,key); res.json({ok:true, hasKey:true, provider:r.provider, symbol, currency, price:r.price, sampleFields:Object.keys(r.payload||{}).slice(0,20)}); }
-  catch(e){ res.status(502).json({ok:false, hasKey:true, symbol, currency, error:e.message}); }
+
+app.get('/api/prices/history', async (req, res, next) => {
+  try {
+    const metal = String(req.query.metal || 'AU').toUpperCase();
+    const currency = String(req.query.currency || 'CZK').toUpperCase();
+    const days = Math.min(Number(req.query.days || 30), 365);
+    if (!pool || !dbReady) return res.json({ metal, currency, history: generateSyntheticPriceHistory(metal, currency, days), mode:'memory', dbError: dbInitError ? dbInitError.message : undefined });
+    const result = await pool.query(`select captured_at as "capturedAt", price_toz as "priceToz", source from metal_price_snapshots where metal=$1 and currency=$2 and captured_at >= now() - ($3 || ' days')::interval order by captured_at asc`, [metal,currency,days]);
+    if (result.rows.length > 2) return res.json({ metal, currency, history: result.rows, mode:'db' });
+    return res.json({ metal, currency, history: generateSyntheticPriceHistory(metal, currency, days), mode:'synthetic' });
+  } catch (error) { next(error); }
 });
-app.get('/api/prices/latest', async (req,res)=>{
-  try{ res.json(await refreshPrices({force:req.query.force==='1'})); }
-  catch(e){ res.status(502).json({mode:'error', timestamp:now(), prices:null, warning:e.message}); }
+
+app.get('/api/spreads/history', async (req, res, next) => {
+  try {
+    const marketKey = String(req.query.marketKey || 'AUXZU_CZK');
+    const days = Math.min(Number(req.query.days || 30), 365);
+    if (!pool || !dbReady) return res.json({ marketKey, history: generateSyntheticSpreadHistory(marketKey, days), mode:'memory', dbError: dbInitError ? dbInitError.message : undefined });
+    const result = await pool.query(`select captured_at as "capturedAt", spread_pct as "spreadPct", spread_abs as "spreadAbs", best_bid_toz as "bestBidToz", best_offer_toz as "bestOfferToz" from market_spread_snapshots where market_key=$1 and captured_at >= now() - ($2 || ' days')::interval order by captured_at asc`, [marketKey,days]);
+    if (result.rows.length > 2) return res.json({ marketKey, history: result.rows, mode:'db' });
+    return res.json({ marketKey, history: generateSyntheticSpreadHistory(marketKey, days), mode:'synthetic' });
+  } catch (error) { next(error); }
 });
-app.post('/api/admin/refresh-prices', async (req,res)=>{
-  if(process.env.ADMIN_TOKEN && req.headers['x-admin-token']!==process.env.ADMIN_TOKEN) return res.status(403).json({ok:false,error:'Forbidden'});
-  try{ res.json({ok:true, result:await refreshPrices({force:true})}); }
-  catch(e){ res.status(502).json({ok:false,error:e.message}); }
+
+app.get('/api/accounts/:externalRef/cards', async (req, res, next) => {
+  try {
+    const externalRef = req.params.externalRef === 'demo' ? 'demo' : req.params.externalRef;
+    if (!pool || !dbReady) return res.json({ user:{ externalRef:'demo', fullName:'Demo klient' }, cards: demoAccountCards(), mode:'memory', dbError: dbInitError ? dbInitError.message : undefined });
+    const userRes = await pool.query(`select * from app_users where external_ref=$1 limit 1`, [externalRef]);
+    if (!userRes.rows.length) return res.status(404).json({ error:'Uživatel nenalezen' });
+    const user = userRes.rows[0];
+    const cardsRes = await pool.query(`select * from account_cards where user_id=$1 and is_enabled=true order by sort_order asc`, [user.id]);
+    const holdings = (await pool.query(`select * from client_metal_holdings where user_id=$1 order by metal, location`, [user.id])).rows;
+    const cash = (await pool.query(`select * from client_cash_balances where user_id=$1 order by currency`, [user.id])).rows;
+    const settings = (await pool.query(`select * from account_settings where user_id=$1`, [user.id])).rows[0] || {};
+    const latest = DEMO_PRICES;
+    const cards = cardsRes.rows.map(card => buildAccountCard(card, holdings, cash, settings, latest));
+    res.json({ user:{ id:user.id, externalRef:user.external_ref, fullName:user.full_name, email:user.email, kycStatus:user.kyc_status }, cards });
+  } catch (error) { next(error); }
 });
-app.get('/api/prices/history',(req,res)=>{
-  const db=readDb();
-  const metal=String(req.query.metal||'AU').toUpperCase();
-  const currency=String(req.query.currency||'CZK').toUpperCase();
-  const rows=db.priceHistory.filter(x=>x.metal===metal && x.currency===currency).slice(-500);
-  res.json({metal,currency,rows});
-});
-app.get('/api/spreads/history',(req,res)=>{
-  const db=readDb();
-  const marketKey=String(req.query.marketKey||'AUXZU_CZK').toUpperCase();
-  const rows=db.spreadHistory.filter(x=>String(x.marketKey).toUpperCase()===marketKey).slice(-500);
-  res.json({marketKey,rows});
-});
-app.get('/api/accounts/demo/cards',(req,res)=>{
-  const db=readDb();
-  if(!db.accountCards?.length){
-    db.accountCards=[
-      {id:'summary',title:'Souhrn účtu',kind:'summary',order:1,enabled:true},
-      {id:'cash',title:'Peněžní zůstatky',kind:'cash',order:2,enabled:true},
-      {id:'metals',title:'Kovové zůstatky',kind:'metals',order:3,enabled:true},
-      {id:'orders',title:'Pokyny a objednávky',kind:'orders',order:4,enabled:true}
-    ]; writeDb(db);
+
+function demoAccountCards() {
+  const holdings = [
+    { metal:'AU', location:'Curych', total_g:120.5 },
+    { metal:'AG', location:'Curych', total_g:2500 },
+    { metal:'PT', location:'Londýn', total_g:24.2 },
+    { metal:'PD', location:'Londýn', total_g:10.1 }
+  ];
+  const cash = [{currency:'CZK',available:750000},{currency:'EUR',available:5000},{currency:'USD',available:1200},{currency:'CHF',available:800}];
+  const settings = { valuation_currency:'CZK', timezone:'Europe/Prague', language:'cs', two_factor_status:'not_active', order_alerts_email:true, statements_delivery:'online_and_email', trading_silver_enabled:true, trading_platinum_enabled:true, trading_palladium_enabled:true };
+  return [
+    { card_key:'summary', card_type:'summary', title_cs:'Souhrn účtu' },
+    { card_key:'bullion_au', card_type:'holding', title_cs:'Zlato' },
+    { card_key:'bullion_ag', card_type:'holding', title_cs:'Stříbro' },
+    { card_key:'bullion_pt', card_type:'holding', title_cs:'Platina' },
+    { card_key:'bullion_pd', card_type:'holding', title_cs:'Palladium' },
+    { card_key:'currency', card_type:'cash', title_cs:'Měnové zůstatky' },
+    { card_key:'trading_options', card_type:'settings', title_cs:'Obchodní možnosti' },
+    { card_key:'security_options', card_type:'settings', title_cs:'Bezpečnostní nastavení' }
+  ].map(c => buildAccountCard(c, holdings, cash, settings, DEMO_PRICES));
+}
+
+function formatNumber(n, decimals = 2) { return Number(n || 0).toLocaleString('cs-CZ', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }); }
+function metalName(m) { return { AU:'Zlato', AG:'Stříbro', PT:'Platina', PD:'Palladium' }[m] || m; }
+function valuationCzk(holdings, prices) { return holdings.reduce((sum,h) => sum + (Number(h.total_g) / 31.1034768) * Number(prices[h.metal]?.CZK || 0), 0); }
+function buildAccountCard(card, holdings, cash, settings, prices) {
+  const title = card.title_cs || card.titleCs || 'Karta';
+  if (card.card_type === 'summary') {
+    return { key: card.card_key, title, rows:[
+      { label:'Ocenění kovů', value: formatNumber(valuationCzk(holdings, prices), 0) + ' Kč' },
+      { label:'Peněžní zůstatky', value: cash.map(c => `${formatNumber(c.available, c.currency === 'CZK' ? 0 : 2)} ${c.currency}`).join(' · ') },
+      { label:'Valuační měna', value: settings.valuation_currency || 'CZK' }
+    ]};
   }
-  res.json({cards:db.accountCards.filter(c=>c.enabled).sort((a,b)=>a.order-b.order)});
-});
-
-
-function ensureAdminData(db){
-  db.users = Array.isArray(db.users) ? db.users : [];
-  db.orders = Array.isArray(db.orders) ? db.orders : [];
-  db.accountCards = Array.isArray(db.accountCards) ? db.accountCards : [];
-  db.audit = Array.isArray(db.audit) ? db.audit : [];
-  db.settings = db.settings && typeof db.settings === 'object' ? db.settings : {};
-  if(!db.users.length){
-    db.users.push(
-      {id:'U1001', name:'Demo klient', email:'client@demo.local', role:'client', kyc:'verified', status:'active', cashCZK:750000, auG:120.5, agG:0, createdAt:now()},
-      {id:'U1002', name:'Klient čeká na KYC', email:'kyc@demo.local', role:'client', kyc:'pending', status:'watch', cashCZK:150000, auG:0, agG:0, createdAt:now()},
-      {id:'U1003', name:'Dealer', email:'dealer@demo.local', role:'dealer', kyc:'verified', status:'active', cashCZK:0, auG:0, agG:0, createdAt:now()}
-    );
+  if (card.card_type === 'holding') {
+    const metal = card.card_key?.split('_')[1]?.toUpperCase();
+    const rows = holdings.filter(h => h.metal === metal).map(h => ({ label: `${metalName(h.metal)} · ${h.location}`, value: `${formatNumber(h.total_g, 3)} g` }));
+    const total = holdings.filter(h => h.metal === metal).reduce((s,h) => s + Number(h.total_g), 0);
+    rows.push({ label:'Celkem v úschově', value: `${formatNumber(total, 3)} g` });
+    return { key: card.card_key, title, rows };
   }
-  if(!db.accountCards.length){
-    db.accountCards.push(
-      {id:'summary',title:'Souhrn účtu',kind:'summary',order:1,enabled:true,description:'Celkový přehled klientského účtu'},
-      {id:'cash',title:'Peněžní zůstatky',kind:'cash',order:2,enabled:true,description:'CZK / EUR / CHF / USD zůstatky'},
-      {id:'metals',title:'Kovové zůstatky',kind:'metals',order:3,enabled:true,description:'Au / Ag / Pt / Pd v evidenci'},
-      {id:'orders',title:'Pokyny a objednávky',kind:'orders',order:4,enabled:true,description:'Rozpracované, čekající a schválené pokyny'},
-      {id:'kyc',title:'KYC / AML',kind:'compliance',order:5,enabled:true,description:'Ověření klienta a limity'}
-    );
+  if (card.card_type === 'cash') {
+    return { key: card.card_key, title, rows: cash.map(c => ({ label:c.currency, value: `${formatNumber(c.available, c.currency === 'CZK' ? 0 : 2)} ${c.currency}` })) };
   }
-  db.settings = {
-    commissionReserveBps: 100,
-    defaultSettlement: 'client-ledger',
-    allowOrdersWithoutKyc: false,
-    ...db.settings
-  };
-  return db;
+  return { key: card.card_key, title, rows:[
+    { label:'Jazyk', value: settings.language || 'cs' },
+    { label:'Časové pásmo', value: settings.timezone || 'Europe/Prague' },
+    { label:'Stříbro', value: settings.trading_silver_enabled ? 'Povoleno' : 'Vypnuto' },
+    { label:'Platina', value: settings.trading_platinum_enabled ? 'Povoleno' : 'Vypnuto' },
+    { label:'2FA', value: settings.two_factor_status === 'active' ? 'Aktivní' : 'Neaktivní' },
+    { label:'Výpisy', value: settings.statements_delivery === 'online_and_email' ? 'Online a e-mailem' : 'Online' }
+  ]};
 }
 
-function saveAudit(db, event, detail={}, actor='admin'){
-  db.audit = Array.isArray(db.audit) ? db.audit : [];
-  db.audit.unshift({id:'A'+Date.now().toString(36), time:now(), actor, event, detail});
-  db.audit = db.audit.slice(0, 500);
-}
-
-function adminTokenOk(req){
-  const token = process.env.ADMIN_TOKEN;
-  if(!token) return true;
-  return req.headers['x-admin-token'] === token || req.query.adminToken === token;
-}
-function requireAdmin(req,res,next){
-  if(!adminTokenOk(req)) return res.status(403).json({ok:false,error:'Neplatný nebo chybějící ADMIN_TOKEN.'});
-  next();
-}
-function publicAdminState(){
-  const db=ensureAdminData(readDb());
-  writeDb(db);
-  return {
-    usersCount: db.users.length,
-    ordersCount: db.orders.length,
-    pendingKyc: db.users.filter(u=>u.kyc==='pending').length,
-    openOrders: db.orders.filter(o=>['rozpracováno','čeká','schváleno','draft','pending','approved'].includes(String(o.status||'').toLowerCase())).length,
-    cardsCount: db.accountCards.length,
-    auditCount: db.audit.length,
-    latestPrices: db.latestPrices || null,
-    settings: db.settings
-  };
-}
-
-app.get('/api/admin/overview', requireAdmin, (req,res)=>res.json({ok:true, ...publicAdminState()}));
-app.get('/api/admin/state', requireAdmin, (req,res)=>{ const db=ensureAdminData(readDb()); writeDb(db); res.json({ok:true, db}); });
-
-app.get('/api/admin/users', requireAdmin, (req,res)=>{ const db=ensureAdminData(readDb()); writeDb(db); res.json({ok:true, users:db.users}); });
-app.post('/api/admin/users', requireAdmin, (req,res)=>{
-  const db=ensureAdminData(readDb());
-  const input=req.body||{};
-  const user={
-    id: input.id || ('U'+Date.now().toString(36).toUpperCase()),
-    name: String(input.name||'Nový klient'),
-    email: String(input.email||''),
-    role: String(input.role||'client'),
-    kyc: String(input.kyc||'pending'),
-    status: String(input.status||'active'),
-    cashCZK: Number(input.cashCZK||0),
-    cashEUR: Number(input.cashEUR||0),
-    cashCHF: Number(input.cashCHF||0),
-    cashUSD: Number(input.cashUSD||0),
-    auG: Number(input.auG||0), agG: Number(input.agG||0), ptG: Number(input.ptG||0), pdG: Number(input.pdG||0),
-    createdAt: now(), updatedAt: now()
-  };
-  db.users.unshift(user); saveAudit(db,'user.create',{id:user.id,email:user.email}); writeDb(db); res.json({ok:true,user});
-});
-app.put('/api/admin/users/:id', requireAdmin, (req,res)=>{
-  const db=ensureAdminData(readDb()); const user=db.users.find(u=>String(u.id)===String(req.params.id));
-  if(!user) return res.status(404).json({ok:false,error:'Uživatel nenalezen.'});
-  const allowed=['name','email','role','kyc','status','cashCZK','cashEUR','cashCHF','cashUSD','auG','agG','ptG','pdG'];
-  for(const k of allowed) if(k in (req.body||{})) user[k]=['cashCZK','cashEUR','cashCHF','cashUSD','auG','agG','ptG','pdG'].includes(k)?Number(req.body[k]||0):req.body[k];
-  user.updatedAt=now(); saveAudit(db,'user.update',{id:user.id}); writeDb(db); res.json({ok:true,user});
-});
-app.delete('/api/admin/users/:id', requireAdmin, (req,res)=>{
-  const db=ensureAdminData(readDb()); const before=db.users.length; db.users=db.users.filter(u=>String(u.id)!==String(req.params.id));
-  saveAudit(db,'user.delete',{id:req.params.id}); writeDb(db); res.json({ok:true,deleted:before-db.users.length});
+app.get('/api/orders', async (req, res, next) => {
+  try {
+    if (!pool || !dbReady) return res.json({ orders:[], mode:'memory', dbError: dbInitError ? dbInitError.message : undefined });
+    const status = req.query.status;
+    const where = status ? 'where o.status=$1' : '';
+    const params = status ? [status] : [];
+    const result = await pool.query(`select o.*, u.full_name from client_orders o left join app_users u on u.id=o.user_id ${where} order by o.created_at desc limit 200`, params);
+    res.json({ orders: result.rows });
+  } catch (error) { next(error); }
 });
 
-app.get('/api/admin/orders', requireAdmin, (req,res)=>{ const db=ensureAdminData(readDb()); writeDb(db); res.json({ok:true, orders:db.orders}); });
-app.post('/api/admin/orders', requireAdmin, (req,res)=>{
-  const db=ensureAdminData(readDb()); const input=req.body||{};
-  const order={
-    id: input.id || ('O'+Date.now().toString(36).toUpperCase()),
-    createdAt: now(), updatedAt: now(),
-    userId: input.userId || '', userName: input.userName || '',
-    side: input.side || 'BUY', marketKey: input.marketKey || '', market: input.market || '',
-    metal: input.metal || '', currency: input.currency || 'CZK', quantity: Number(input.quantity||0),
-    price: Number(input.price||0), total: Number(input.total||0), status: input.status || 'rozpracováno',
-    note: input.note || ''
-  };
-  db.orders.unshift(order); saveAudit(db,'order.create',{id:order.id,status:order.status}); writeDb(db); res.json({ok:true,order});
-});
-app.patch('/api/admin/orders/:id/status', requireAdmin, (req,res)=>{
-  const db=ensureAdminData(readDb()); const order=db.orders.find(o=>String(o.id)===String(req.params.id));
-  if(!order) return res.status(404).json({ok:false,error:'Objednávka nenalezena.'});
-  order.status=String(req.body?.status||order.status); order.updatedAt=now(); saveAudit(db,'order.status',{id:order.id,status:order.status}); writeDb(db); res.json({ok:true,order});
-});
-app.put('/api/admin/orders/:id', requireAdmin, (req,res)=>{
-  const db=ensureAdminData(readDb()); const order=db.orders.find(o=>String(o.id)===String(req.params.id));
-  if(!order) return res.status(404).json({ok:false,error:'Objednávka nenalezena.'});
-  Object.assign(order, req.body||{}, {updatedAt:now()}); saveAudit(db,'order.update',{id:order.id}); writeDb(db); res.json({ok:true,order});
-});
-app.delete('/api/admin/orders/:id', requireAdmin, (req,res)=>{
-  const db=ensureAdminData(readDb()); const before=db.orders.length; db.orders=db.orders.filter(o=>String(o.id)!==String(req.params.id));
-  saveAudit(db,'order.delete',{id:req.params.id}); writeDb(db); res.json({ok:true,deleted:before-db.orders.length});
+app.post('/api/orders', async (req, res, next) => {
+  try {
+    const body = req.body || {};
+    const externalRef = body.userId || 'demo';
+    const gross = Number(body.quantity || 0) * Number(body.limitPrice || 0);
+    const fee = gross * 0.005;
+    const total = body.side === 'BUY' ? gross + fee : gross - fee;
+    if (!pool || !dbReady) return res.json({ order:{ id:'LOCAL-' + Date.now(), status:'pending', ...body, grossValue:gross, feeValue:fee, totalValue:total }, mode:'memory', dbError: dbInitError ? dbInitError.message : undefined });
+    const userRes = await pool.query(`select id from app_users where external_ref=$1 limit 1`, [externalRef]);
+    const userId = userRes.rows[0]?.id || null;
+    const result = await pool.query(`insert into client_orders(user_id,side,market_key,metal,location,currency,quantity,unit,limit_price,order_type,status,gross_value,fee_value,total_value)
+      values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) returning *`, [userId, body.side || 'BUY', body.marketKey || '', body.metal || 'AU', body.location || null, body.currency || 'CZK', Number(body.quantity || 0), body.unit || 'TOZ', Number(body.limitPrice || 0), body.orderType || 'TIL_CANCEL', body.status || 'pending', gross, fee, total]);
+    res.status(201).json({ order: result.rows[0], mode:'db' });
+  } catch (error) { next(error); }
 });
 
-app.get('/api/admin/account-cards', requireAdmin, (req,res)=>{ const db=ensureAdminData(readDb()); writeDb(db); res.json({ok:true,cards:db.accountCards}); });
-app.post('/api/admin/account-cards', requireAdmin, (req,res)=>{
-  const db=ensureAdminData(readDb()); const input=req.body||{};
-  const card={id:input.id||('card_'+Date.now().toString(36)),title:input.title||'Nová karta',kind:input.kind||'custom',order:Number(input.order||99),enabled:input.enabled!==false,description:input.description||''};
-  db.accountCards.push(card); saveAudit(db,'card.create',{id:card.id}); writeDb(db); res.json({ok:true,card});
-});
-app.put('/api/admin/account-cards/:id', requireAdmin, (req,res)=>{
-  const db=ensureAdminData(readDb()); const card=db.accountCards.find(c=>String(c.id)===String(req.params.id));
-  if(!card) return res.status(404).json({ok:false,error:'Karta nenalezena.'});
-  Object.assign(card, req.body||{}); card.order=Number(card.order||0); card.enabled=card.enabled!==false; saveAudit(db,'card.update',{id:card.id}); writeDb(db); res.json({ok:true,card});
-});
-app.delete('/api/admin/account-cards/:id', requireAdmin, (req,res)=>{
-  const db=ensureAdminData(readDb()); const before=db.accountCards.length; db.accountCards=db.accountCards.filter(c=>String(c.id)!==String(req.params.id));
-  saveAudit(db,'card.delete',{id:req.params.id}); writeDb(db); res.json({ok:true,deleted:before-db.accountCards.length});
+app.patch('/api/orders/:id/status', async (req, res, next) => {
+  try {
+    if (req.headers['x-admin-token'] !== ADMIN_TOKEN) return res.status(401).json({ error:'Neoprávněný přístup' });
+    const status = req.body.status;
+    const result = await q(`update client_orders set status=$1, updated_at=now() where id=$2 returning *`, [status, req.params.id]);
+    if (!result.rows.length) return res.status(404).json({ error:'Pokyn nenalezen' });
+    res.json({ order: result.rows[0] });
+  } catch (error) { next(error); }
 });
 
-app.get('/api/admin/settings', requireAdmin, (req,res)=>{ const db=ensureAdminData(readDb()); writeDb(db); res.json({ok:true,settings:db.settings}); });
-app.put('/api/admin/settings', requireAdmin, (req,res)=>{ const db=ensureAdminData(readDb()); db.settings={...db.settings,...(req.body||{})}; saveAudit(db,'settings.update',db.settings); writeDb(db); res.json({ok:true,settings:db.settings}); });
-app.get('/api/admin/audit', requireAdmin, (req,res)=>{ const db=ensureAdminData(readDb()); writeDb(db); res.json({ok:true,audit:db.audit}); });
-app.delete('/api/admin/audit', requireAdmin, (req,res)=>{ const db=ensureAdminData(readDb()); db.audit=[]; writeDb(db); res.json({ok:true}); });
-app.post('/api/admin/seed', requireAdmin, (req,res)=>{ const db=ensureAdminData(readDb()); saveAudit(db,'system.seed',{source:'admin'}); writeDb(db); res.json({ok:true, overview:publicAdminState()}); });
+app.post('/api/admin/refresh-prices', async (req, res, next) => {
+  try {
+    if (req.headers['x-admin-token'] !== ADMIN_TOKEN) return res.status(401).json({ error:'Neoprávněný přístup' });
+    const payload = await fetchLivePrices();
+    await persistPrices(payload);
+    res.json({ ok:true, mode:payload.mode, timestamp:new Date().toISOString(), warning:payload.warning });
+  } catch (error) { next(error); }
+});
 
+app.get('*', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
-app.listen(PORT,()=>console.log(`Swiss Live Desk ADMIN CZ NO POSTGRES running on ${PORT}; data=${DB_FILE}; postgres=disabled; hardcodedPrices=false`));
+app.use((err, _req, res, _next) => {
+  const status = err.status || 500;
+  console.error(err);
+  res.status(status).json({ error: err.message || 'Server error' });
+});
+
+ensureSchema().then(() => {
+  app.listen(PORT, () => console.log(`Swiss Gold Market Board běží na portu ${PORT} | dbReady=${dbReady}`));
+}).catch(err => {
+  dbReady = false;
+  dbInitError = err;
+  console.error('Schema init failed', err);
+  if (DB_REQUIRED) {
+    process.exit(1);
+  }
+  app.listen(PORT, () => console.log(`Swiss Gold Market Board běží v degraded módu na portu ${PORT} | DB není dostupná: ${err.message}`));
+});
